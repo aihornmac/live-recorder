@@ -1,4 +1,5 @@
-import { URL } from 'url'
+import { URL, format } from 'url'
+import * as path from 'path'
 
 import {
   failProviderMismatch,
@@ -57,16 +58,9 @@ export async function getRoomInfoByRoomId(roomId: number) {
 
 export async function getRoomIdByRoomUrlKey(name: string) {
   const url = `https://www.showroom-live.com/${name}`
-  const fakeMobileHeader = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Charset': 'UTF-8,*;q=0.5',
-    'Accept-Encoding': 'gzip,deflate,sdch',
-    'Accept-Language': 'en-US,en;q=0.8',
-    'User-Agent': 'Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36',
-  }
   return ensure(async () => {
     const res = await get<string>(url, {
-      headers: fakeMobileHeader,
+      headers: getFakeMobileHeaders(),
       responseType: 'text',
       validateStatus(status) {
         return status >= 200 && status < 300 || status === 404
@@ -169,4 +163,31 @@ interface GetStreamingUrlListSuccessResponse {
     type: 'hls'
     url: string
   }>
+}
+
+export function getHeuristicChunkUrl(sampleChunkId: number, sampleChunkUrl: string) {
+  const u = new URL(sampleChunkUrl)
+  const sampleChunkFileName = path.basename(u.pathname)
+  u.pathname = path.dirname(u.pathname)
+  const directory = format(u)
+  return function getById(id: number) {
+    if (id === sampleChunkId) return sampleChunkUrl
+    const newFileName = sampleChunkFileName.replace(String(sampleChunkId), String(id))
+    if (newFileName === sampleChunkFileName) {
+      throw fail(`Failed to get heuristic chunk url of ${id} given chunk ${sampleChunkId} ${sampleChunkUrl}`)
+    }
+    const newUrl = new URL(directory)
+    newUrl.pathname += `/${newFileName}`
+    return format(newUrl)
+  }
+}
+
+function getFakeMobileHeaders() {
+  return {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Charset': 'UTF-8,*;q=0.5',
+    'Accept-Encoding': 'gzip,deflate,sdch',
+    'Accept-Language': 'en-US,en;q=0.8',
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36',
+  }
 }

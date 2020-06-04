@@ -10,6 +10,10 @@ import { exec } from '../../utils/cli'
 import { fail, isErrorPayload } from '../../utils/error'
 import { Clicker } from '../../utils/clicker'
 
+export interface HLSProjectOptions {
+  readonly getHeuristicChunkUrl?: (id: number, url: string) => (id: number) => string
+}
+
 export class HLSProject {
   private _url: string
   private _root: string
@@ -20,11 +24,12 @@ export class HLSProject {
 
   private _chunkDownloadMap = new Map<number, ChunkDownload>()
   protected _logger: LogWriter
+  private _getHeuristicChunkUrl?: (id: number) => string
 
   constructor(
     streamUrl: string,
     projectDirectoryPath: string,
-
+    readonly options?: HLSProjectOptions
   ) {
     this._url = streamUrl
     this._root = projectDirectoryPath
@@ -68,6 +73,8 @@ export class HLSProject {
     await this.mergeStream()
 
     process.removeListener('SIGINT', onSIGINT)
+
+    return state
   }
 
   async init() {
@@ -81,6 +88,7 @@ export class HLSProject {
 
   async loopPlayList() {
     let ended = false
+    const interval = 2000
 
     while (!ended) {
       if (this._isStopped) return 'stopped'
@@ -94,7 +102,7 @@ export class HLSProject {
             ended = true
           }
           const dt = Date.now() - t0
-          if (dt > 1000) {
+          if (dt > interval * 2) {
             console.log(chalk.gray(`request play list timeout ${dt}`))
           }
         } catch (e) {
@@ -105,8 +113,8 @@ export class HLSProject {
 
       const t1 = Date.now()
       const dt = t1 - t0
-      if (dt < 1000) {
-        await later(1000 - dt)
+      if (dt < interval) {
+        await later(interval - dt)
       }
     }
 
@@ -144,10 +152,23 @@ export class HLSProject {
     if (m3u) {
       const { mediaSequence } = m3u.extension
       if (typeof mediaSequence === 'number') {
+        // heuristic chunk probing
+        niceToHave(() => {
+          if (!this._getHeuristicChunkUrl) {
+            if (m3u.tracks.length) {
+              const creator = this.options?.getHeuristicChunkUrl
+              if (creator) {
+                const chunkUrl = URL.resolve(this._url, m3u.tracks[0].url)
+                this._getHeuristicChunkUrl = creator(mediaSequence, chunkUrl)
+                this.triggerHeuristicChunkDownload(mediaSequence)
+              }
+            }
+          }
+        })
         niceToHave(async () => {
           await Promise.all(m3u.tracks.map(async (track, i) => {
             const id = mediaSequence + i
-            await this.downloadChunk(id, track.url)
+            await this.downloadChunk(id, track.url, true)
           }))
         })
       }
@@ -156,17 +177,25 @@ export class HLSProject {
     return
   }
 
-  async downloadChunk(id: number, url: string) {
+  async downloadChunk(id: number, url: string, confident: boolean) {
     const map = this._chunkDownloadMap
     if (map.has(id)) return
     const chunkUrl = URL.resolve(this._url, url)
-    const download = new ChunkDownload(id, chunkUrl, this._chunksPath)
+    const download = new ChunkDownload(id, chunkUrl, this._chunksPath, confident)
     map.set(id, download)
-    console.log(`downloading chunk [${id}] ${chunkUrl}`)
+    if (confident) {
+      console.log(`downloading chunk [${id}] ${chunkUrl}`)
+    }
     const result = await download.result()
     if (result.state === 'rejected') {
-      console.error(chalk.redBright(`Failed to download chunk [${id}] ${chunkUrl}`))
-      console.log(result.reason)
+      if (confident) {
+        console.error(chalk.redBright(`Failed to download chunk [${id}] ${chunkUrl}`))
+        console.log(result.reason)
+      }
+    } else if (result.ok) {
+      if (!confident) {
+        console.log(chalk.whiteBright(`heuristic downloaded chunk [${id}] ${chunkUrl}`))
+      }
     }
     return result
   }
@@ -247,6 +276,22 @@ export class HLSProject {
     }
     return chunkDuration
   }
+
+  triggerHeuristicChunkDownload(startId: number) {
+    const getHeuristicChunkUrl = this._getHeuristicChunkUrl
+    if (!getHeuristicChunkUrl) return
+    const maxLength = 100
+    const cursorId = Math.max(0, startId - maxLength)
+    const length = startId - cursorId
+    if (length <= 0) return
+    return niceToHave(async () => {
+      return Promise.all(times(length, async i => {
+        const id = cursorId + i
+        const url = getHeuristicChunkUrl(id)
+        return this.downloadChunk(id, url, false)
+      }))
+    })
+  }
 }
 
 interface PlayListFile {
@@ -256,6 +301,7 @@ interface PlayListFile {
 
 type ChunkDownloadResult = {
   state: 'resolved'
+  ok: boolean
 } | {
   state: 'rejected'
   reason: unknown
@@ -268,6 +314,7 @@ class ChunkDownload {
     readonly id: number,
     readonly url: string,
     readonly chunksPath: string,
+    readonly confident: boolean
   ) {
     this._promise = this._run()
   }
@@ -285,9 +332,11 @@ class ChunkDownload {
       }
 
       const run = async (interval: number) => {
-        if (resolved) return { state: 'resolved' as const }
-        if (interval > 0) {
-          console.log(chalk.gray(`chunk ${this.id} download timeout ${interval}`))
+        if (resolved) return { state: 'resolved' as const, ok: false }
+        if (interval > 4000) {
+          if (this.confident) {
+            console.log(chalk.gray(`chunk ${this.id} download timeout ${interval}`))
+          }
         }
         const result = await this._download()
         if (!resolved && result.state === 'resolved') {
@@ -300,6 +349,10 @@ class ChunkDownload {
         run(0),
         later(2000).then(() => run(2000)),
         later(4000).then(() => run(4000)),
+        later(8000).then(() => run(8000)),
+        later(16000).then(() => run(16000)),
+        later(32000).then(() => run(32000)),
+        later(64000).then(() => run(64000)),
       ])
 
       if (!resolved) {
@@ -312,7 +365,7 @@ class ChunkDownload {
     const { id, url, chunksPath } = this
     return new Promise<ChunkDownloadResult>(async resolve => {
       try {
-        await ensure(async () => {
+        const ok = await ensure(async () => {
           const stream = await ensure(async () => {
             const res = await get<NodeJS.ReadableStream>(url, {
               validateStatus(status) {
@@ -323,8 +376,10 @@ class ChunkDownload {
             if (res.status >= 200 && res.status < 300) {
               return res.data
             }
-            return fail(`Request chunk returns ${res.status}`)
+            if (!this.confident && res.status === 404) return
+            return fail(`Request chunk ${id} returns ${res.status}`)
           })
+          if (!stream) return false
           if (isErrorPayload(stream)) throw stream
           const ext = path.extname(url).slice(1)
           const writeStream = fs.createWriteStream(path.join(chunksPath, `${id}${ext ? '.' + ext : ''}`))
@@ -335,7 +390,7 @@ class ChunkDownload {
           })
           return true
         })
-        resolve({ state: 'resolved' })
+        resolve({ state: 'resolved', ok })
       } catch (e) {
         resolve({ state: 'rejected', reason: e })
       }

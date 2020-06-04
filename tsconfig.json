@@ -18,14 +18,13 @@
     "strict": true,
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,
-    "target": "es2020",
+    "target": "es2019",
     "lib": [
       "es2015",
       "es2016",
       "es2017",
       "es2018",
-      "es2019",
-      "es2020"
+      "es2019"
     ]
   }
 }

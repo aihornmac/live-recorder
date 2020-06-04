@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as chalk from 'chalk'
 import format from 'date-fns/format'
 
-import { parseUrl, getRoomIdByRoomUrlKey, getStreamingUrl, getRoomInfoByRoomId } from './api'
+import { parseUrl, getRoomIdByRoomUrlKey, getStreamingUrl, getRoomInfoByRoomId, getHeuristicChunkUrl } from './api'
 import { HLSProject } from '../common/project'
 import { CommonCreateOptions } from '../common/typed-input'
 import { fail } from '../../utils/error'
@@ -16,6 +16,7 @@ export function create(url: string, options: CommonCreateOptions) {
     if (typeof roomId === 'undefined') {
       throw fail(chalk.yellowBright(`room ${info.data.name} doesn't exist`))
     }
+    console.log(`room id ${roomId}`)
     const roomInfoPromise = getRoomInfoByRoomId(roomId)
     // loop in case of broken stream
     while (true) {
@@ -35,8 +36,11 @@ export function create(url: string, options: CommonCreateOptions) {
       )
       console.log(`writing to ${projectPath}`)
       console.log(`stream playlist ${streamingUrl}`)
-      const project = new HLSProject(streamingUrl, projectPath)
-      await project.handover()
+      const project = new HLSProject(streamingUrl, projectPath, {
+        getHeuristicChunkUrl,
+      })
+      const state = await project.handover()
+      if (state === 'stopped') return
     }
   }
 }

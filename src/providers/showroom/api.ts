@@ -127,7 +127,7 @@ export async function getStreamingUrl(roomId: number) {
     const list = json.streaming_url_list
     if (!list) {
       const dt = Date.now() - t0
-      await later(Math.max(0, 1000 - dt))
+      await later(Math.max(0, 2000 - dt))
       throw fail(`Live is not started`)
     }
     // only takes http live streaming

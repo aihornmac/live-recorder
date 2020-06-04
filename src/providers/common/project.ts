@@ -10,13 +10,13 @@ import { exec } from '../../utils/cli'
 import { fail, isErrorPayload } from '../../utils/error'
 import { Clicker } from '../../utils/clicker'
 
-
 export class HLSProject {
   private _url: string
   private _root: string
   private _playListsPath: string
   private _chunksPath: string
   private _isStopped: boolean
+  private _isStreamStarted: boolean
 
   private _chunkDownloadMap = new Map<number, ChunkDownload>()
   protected _logger: LogWriter
@@ -24,6 +24,7 @@ export class HLSProject {
   constructor(
     streamUrl: string,
     projectDirectoryPath: string,
+
   ) {
     this._url = streamUrl
     this._root = projectDirectoryPath
@@ -31,6 +32,7 @@ export class HLSProject {
     this._chunksPath = path.join(projectDirectoryPath, 'chunks')
     this._logger = new LogWriter(path.join(projectDirectoryPath, 'logs.log'))
     this._isStopped = false
+    this._isStreamStarted = false
   }
 
   async handover() {
@@ -122,7 +124,11 @@ export class HLSProject {
           return status >= 200 && status < 300 || status === 404
         },
       })
-      if (r.status === 404) return
+      if (r.status === 404) {
+        if (this._isStreamStarted) return
+        throw fail(`Live is not started`)
+      }
+      this._isStreamStarted = true
       return r
     })
     if (!res) return 'ended'
@@ -170,6 +176,7 @@ export class HLSProject {
       this.getChunksFileMap(),
     ])
     const ids = Array.from(chunksFileMap.keys())
+    if (!ids.length) return
     const minId = Math.min(...ids)
     const maxId = Math.max(...ids)
     const missedIds: number[] = []

@@ -84,6 +84,7 @@ export async function getRoomIdByRoomUrlKey(name: string) {
 
 export async function getStreamingUrl(roomId: number) {
   return ensure(async () => {
+    const t0 = Date.now()
     const url = `https://www.showroom-live.com/api/live/streaming_url?room_id=${roomId}&_=${Date.now()}`
     const res = await get<GetStreamingUrlListResponse>(url, { responseType: 'json' })
     const json = res.data
@@ -125,8 +126,9 @@ export async function getStreamingUrl(roomId: number) {
     // }
     const list = json.streaming_url_list
     if (!list) {
-      await later(1000)
-      throw fail(`live offline`, `Live is not started`)
+      const dt = Date.now() - t0
+      await later(Math.max(0, 1000 - dt))
+      throw fail(`Live is not started`)
     }
     // only takes http live streaming
     const hlsList = list.filter((x): x is Extract<typeof x, { type: 'hls' }> => x.type === 'hls')

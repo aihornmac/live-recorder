@@ -18,6 +18,10 @@ specify output filename
 
     $ live-recorder -o my-nekojita https://showroom-live.com/nekojita
 
+record live chat
+
+    $ live-recorder --type livechat https://showroom-live.com/nekojita
+
 ## Supported Sites
 
 | Site | URL |

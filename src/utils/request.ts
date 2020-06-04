@@ -7,7 +7,7 @@ export async function get<T>(url: string, options?: AxiosRequestConfig) {
     return await Axios.get<T>(url, options)
   } catch (e) {
     if (isAxiosError(e)) {
-      if (e.code === 'ETIMEDOUT' || e.code === 'ECONNREFUSED') {
+      if (e.code === 'ETIMEDOUT' || e.code === 'ECONNREFUSED' || e.code === 'ECONNRESET') {
         throw fail(`${e.code} ${url}`)
       }
     }

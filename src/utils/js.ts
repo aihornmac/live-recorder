@@ -23,3 +23,20 @@ export function times<T>(n: number, map: (i: number) => T) {
   }
   return arr
 }
+
+export interface ExternalPromise<T = unknown> {
+  promise: Promise<T>
+  resolve(value: T | PromiseLike<T>): void
+  reject(error: unknown): void
+}
+
+export function createExternalPromise<T>(): ExternalPromise<T> {
+  type Type = ExternalPromise<T>
+  let resolve!: Type['resolve']
+  let reject!: Type['reject']
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { resolve, reject, promise }
+}

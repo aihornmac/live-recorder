@@ -76,6 +76,54 @@ export async function getRoomIdByRoomUrlKey(name: string) {
   })
 }
 
+export async function getRoomLiveInfo(roomId: number) {
+  const url = `https://www.showroom-live.com/api/live/live_info?room_id=${roomId}`
+  return ensure(async () => {
+    const res = await get<RoomLiveInfo>(url, {
+      headers: getFakeMobileHeaders(),
+      responseType: 'json',
+    })
+    // {
+    //   "enquete_gift_num": 0,
+    //   "is_enquete": false,
+    //   "live_id": 9833971,
+    //   "is_enquete_result": false,
+    //   "room_name": "マクロスがとまらない",
+    //   "background_image_url": null,
+    //   "age_verification_status": 0,
+    //   "bcsvr_port": 8080,
+    //   "video_type": 0,
+    //   "live_type": 0,
+    //   "is_free_gift_only": true,
+    //   "premium_room_type": 0,
+    //   "bcsvr_host": "online.showroom-live.com",
+    //   "bcsvr_key": "960df3:xzRiR62X",
+    //   "room_id": 86535,
+    //   "live_status": 2
+    // }
+    return res.data
+  })
+}
+
+interface RoomLiveInfo {
+  enquete_gift_num: number
+  is_enquete: boolean
+  live_id: number
+  is_enquete_result: boolean
+  room_name: string
+  background_image_url: string | null
+  age_verification_status: number
+  bcsvr_port: number
+  video_type: number
+  live_type: number
+  is_free_gift_only: boolean
+  premium_room_type: number
+  bcsvr_host: string
+  bcsvr_key: string
+  room_id: number
+  live_status: number
+}
+
 export async function getStreamingUrl(roomId: number) {
   return ensure(async () => {
     const t0 = Date.now()
@@ -87,34 +135,20 @@ export async function getStreamingUrl(roomId: number) {
     // {
     //   "streaming_url_list": [
     //     {
-    //       "url": "rtmp://52.197.69.198:1935/liveedge",
-    //       "id": 1,
-    //       "label": "original spec(low latency)",
     //       "is_default": true,
-    //       "type": "rtmp",
-    //       "stream_name": "7656a6d5baa1d77075c971f6d8b6dc61b979fc913dc5fe7cc1318281793436ed"
-    //     },
-    //     {
-    //       "url": "http://52.197.69.198:1935/liveedge/7656a6d5baa1d77075c971f6d8b6dc61b979fc913dc5fe7cc1318281793436ed/playlist.m3u8",
-    //       "is_default": true,
+    //       "url": "https://hls-origin254.showroom-cdn.com/liveedge/efdfd415d5a32b7d6fbdad941a001fc31966e7468468e5439269b9c7d27b601e/chunklist.m3u8",
+    //       "type": "hls",
     //       "id": 2,
+    //       "label": "普通規格",
+    //       "quality": 1500
+    //     },
+    //     {
+    //       "is_default": false,
+    //       "url": "https://hls-origin254.showroom-cdn.com/liveedge/efdfd415d5a32b7d6fbdad941a001fc31966e7468468e5439269b9c7d27b601e_low/chunklist.m3u8",
     //       "type": "hls",
-    //       "label": "original spec"
-    //     },
-    //     {
-    //       "url": "rtmp://52.197.69.198:1935/liveedge",
-    //       "id": 3,
-    //       "label": "low spec(low latency)",
-    //       "is_default": false,
-    //       "type": "rtmp",
-    //       "stream_name": "7656a6d5baa1d77075c971f6d8b6dc61b979fc913dc5fe7cc1318281793436ed_low"
-    //     },
-    //     {
-    //       "url": "http://52.197.69.198:1935/liveedge/7656a6d5baa1d77075c971f6d8b6dc61b979fc913dc5fe7cc1318281793436ed_low/playlist.m3u8",
-    //       "is_default": false,
     //       "id": 4,
-    //       "type": "hls",
-    //       "label": "low spec"
+    //       "label": "低規格",
+    //       "quality": 150
     //     }
     //   ]
     // }
@@ -131,7 +165,6 @@ export async function getStreamingUrl(roomId: number) {
       throw fail(`no hls found`)
     }
     const hls = (
-      hlsList.find(x => x.label.includes('original')) ||
       hlsList.find(x => x.is_default) ||
       hlsList.slice()
         .filter(x => typeof x.quality === 'number')

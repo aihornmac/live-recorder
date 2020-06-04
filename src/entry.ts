@@ -14,16 +14,23 @@ export async function execute() {
       describe: 'Specify output project path',
     })
     .alias('o', 'outputPath')
+    .option('type', {
+      type: 'string',
+      nargs: 1,
+      demandOption: false,
+      describe: 'Specify record type. e.g. video / livechat',
+    })
     .help('h')
     .alias('h', 'help')
     .parse()
   )
 
-  const { outputPath } = argv
+  const { outputPath, type } = argv
   const inputUrl = argv._[0]
   try {
+    const inputType = type === 'livechat' ? 'livechat' : 'video'
     const run = dispatch(inputUrl, { projectPath: outputPath })
-    await run()
+    await run[inputType]()
   } catch (e) {
     if (isErrorPayload(e)) {
       if (e.code === 'string') {

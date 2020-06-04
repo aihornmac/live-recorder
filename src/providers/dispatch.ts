@@ -11,7 +11,7 @@ export function dispatch(url: string, options: CommonCreateOptions) {
   }
   for (const entry of entriesOf(providers)) {
     const [name, methods] = entry
-    const ret = methods.create(url, options)
+    const ret = methods.match(url, options)
     if (isErrorPayload(ret)) {
       if (ret.code === 'provider mismatch') continue
       const { data } = ret

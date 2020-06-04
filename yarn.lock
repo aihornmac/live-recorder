@@ -134,6 +134,13 @@
     "@types/webpack-sources" "*"
     source-map "^0.6.0"
 
+"@types/ws@^7.2.5":
+  version "7.2.5"
+  resolved "https://registry.npm.taobao.org/@types/ws/download/@types/ws-7.2.5.tgz#513f28b04a1ea1aa9dc2cad3f26e8e37c88aae49"
+  integrity sha1-UT8osEoeoaqdwsrT8m6ON8iKrkk=
+  dependencies:
+    "@types/node" "*"
+
 "@types/yargs-parser@*":
   version "15.0.0"
   resolved "https://registry.npm.taobao.org/@types/yargs-parser/download/@types/yargs-parser-15.0.0.tgz#cb3f9f741869e20cce330ffbeb9271590483882d"
@@ -4001,6 +4008,11 @@ write@1.0.3:
   integrity sha1-CADhRSO5I6OH5BUSPIZWFqrg9cM=
   dependencies:
     mkdirp "^0.5.1"
+
+ws@^7.3.0:
+  version "7.3.0"
+  resolved "https://registry.npm.taobao.org/ws/download/ws-7.3.0.tgz#4b2f7f219b3d3737bc1a2fbf145d825b94d38ffd"
+  integrity sha1-Sy9/IZs9Nze8Gi+/FF2CW5TTj/0=
 
 xtend@^4.0.0, xtend@~4.0.1:
   version "4.0.2"

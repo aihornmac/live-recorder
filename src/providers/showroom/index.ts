@@ -8,6 +8,8 @@ import { HLSProject } from '../common/project'
 import { CommonCreateOptions } from '../common/typed-input'
 import { fail } from '../../utils/error'
 import { ShowroomLiveChat } from './live-chat'
+import { ensure } from '../../utils/flow-control'
+import { later } from '../../utils/js'
 
 export function match(url: string, options: CommonCreateOptions) {
   const info = parseUrl(url)
@@ -59,7 +61,16 @@ export function match(url: string, options: CommonCreateOptions) {
     },
     async livechat() {
       const roomId = await getRoomId()
-      const info = await getRoomLiveInfo(roomId)
+      const info = await ensure(async () => {
+        const t0 = Date.now()
+        const ret = await getRoomLiveInfo(roomId)
+        if (!ret.bcsvr_key) {
+          const dt = Date.now() - t0
+          await later(Math.max(0, 2000 - dt))
+          throw fail(`Live Chat is not started`)
+        }
+        return ret
+      })
       const host = info.bcsvr_host
       const port = info.bcsvr_port
       const key = info.bcsvr_key

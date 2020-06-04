@@ -8,6 +8,7 @@ import { ensure, niceToHaveSync, niceToHave } from '../../utils/flow-control'
 import { later, predicate, times } from '../../utils/js'
 import { exec } from '../../utils/cli'
 import { fail, isErrorPayload } from '../../utils/error'
+import { Clicker } from '../../utils/clicker'
 
 
 export class HLSProject {
@@ -33,15 +34,15 @@ export class HLSProject {
   }
 
   async handover() {
-    const MAX_EXIT_COUNT = 3
-    let exitCounts = 0
+    const MAX_EXIT_COUNT = 2
+    const clicker = new Clicker(300)
     const onSIGINT = () => {
       if (this._isStopped) {
-        if (++exitCounts >= MAX_EXIT_COUNT) {
+        if (clicker.click() >= MAX_EXIT_COUNT) {
           process.exit(0)
         }
         console.log()
-        console.log(`press ${MAX_EXIT_COUNT - exitCounts} more time to exit`)
+        console.log(`press ${MAX_EXIT_COUNT - clicker.count} more time to exit`)
       } else {
         this._isStopped = true
         console.log()
@@ -77,38 +78,28 @@ export class HLSProject {
   }
 
   async loopPlayList() {
-    while (true) {
+    let ended = false
+
+    while (!ended) {
       if (this._isStopped) return 'stopped'
 
       const t0 = Date.now()
-      const res = await ensure(async () => {
-        const r = await get<string>(this._url, {
-          responseType: 'text',
-          validateStatus(status) {
-            return status >= 200 && status < 300 || status === 404
-          },
-        })
-        if (r.status === 404) return
-        return r
-      })
-      if (!res) return 'ended'
-      const raw = res.data
-      const m3u = niceToHaveSync(() => parseM3U(raw))
-      niceToHave(async () => {
-        const json = JSON.stringify({ raw, parsed: m3u }, null, 2)
-        await fs.promises.writeFile(path.join(this._playListsPath, `${t0}.json`), json)
-      })
-      if (m3u) {
-        const { mediaSequence } = m3u.extension
-        if (typeof mediaSequence === 'number') {
-          niceToHave(async () => {
-            await Promise.all(m3u.tracks.map(async (track, i) => {
-              const id = mediaSequence + i
-              await this.downloadChunk(id, track.url)
-            }))
-          })
+
+      const check = async () => {
+        try {
+          const ret = await this.requestPlayList()
+          if (ret === 'ended') {
+            ended = true
+          }
+          const dt = Date.now() - t0
+          if (dt > 1000) {
+            console.log(chalk.gray(`request play list timeout ${dt}`))
+          }
+        } catch (e) {
+          console.error(e)
         }
       }
+      check()
 
       const t1 = Date.now()
       const dt = t1 - t0
@@ -116,6 +107,47 @@ export class HLSProject {
         await later(1000 - dt)
       }
     }
+
+    return 'ended'
+  }
+
+  async requestPlayList() {
+    if (this._isStopped) return 'stopped'
+
+    const t0 = Date.now()
+    const res = await ensure(async () => {
+      const r = await get<string>(this._url, {
+        responseType: 'text',
+        validateStatus(status) {
+          return status >= 200 && status < 300 || status === 404
+        },
+      })
+      if (r.status === 404) return
+      return r
+    })
+    if (!res) return 'ended'
+
+    if (this._isStopped) return 'stopped'
+
+    const raw = res.data
+    const m3u = niceToHaveSync(() => parseM3U(raw))
+    niceToHave(async () => {
+      const json = JSON.stringify({ raw, parsed: m3u }, null, 2)
+      await fs.promises.writeFile(path.join(this._playListsPath, `${t0}.json`), json)
+    })
+    if (m3u) {
+      const { mediaSequence } = m3u.extension
+      if (typeof mediaSequence === 'number') {
+        niceToHave(async () => {
+          await Promise.all(m3u.tracks.map(async (track, i) => {
+            const id = mediaSequence + i
+            await this.downloadChunk(id, track.url)
+          }))
+        })
+      }
+    }
+
+    return
   }
 
   async downloadChunk(id: number, url: string) {
@@ -245,7 +277,11 @@ class ChunkDownload {
         _resolve(value)
       }
 
-      const run = async () => {
+      const run = async (interval: number) => {
+        if (resolved) return { state: 'resolved' as const }
+        if (interval > 0) {
+          console.log(chalk.gray(`chunk ${this.id} download timeout ${interval}`))
+        }
         const result = await this._download()
         if (!resolved && result.state === 'resolved') {
           resolve(result)
@@ -254,9 +290,9 @@ class ChunkDownload {
       }
 
       const results = await Promise.all([
-        run(),
-        later(1000).then(run),
-        later(2000).then(run),
+        run(0),
+        later(2000).then(() => run(2000)),
+        later(4000).then(() => run(4000)),
       ])
 
       if (!resolved) {

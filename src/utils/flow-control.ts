@@ -7,7 +7,11 @@ export async function ensure<T>(request: () => MaybePromiseLike<T>): Promise<T> 
       return await request()
     } catch (e) {
       if (isErrorPayload(e)) {
-        console.error(e)
+        if (e.code === 'string') {
+          console.error(e.message)
+        } else {
+          console.error(e)
+        }
         continue
       }
       throw e
@@ -21,7 +25,11 @@ export function ensureSync<T>(request: () => T): T {
       return request()
     } catch (e) {
       if (isErrorPayload(e)) {
-        console.error(e)
+        if (e.code === 'string') {
+          console.error(e.message)
+        } else {
+          console.error(e)
+        }
         continue
       }
       throw e

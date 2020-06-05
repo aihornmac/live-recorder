@@ -1,6 +1,6 @@
 import * as path from 'path'
 import * as fs from 'fs'
-import format from 'date-fns/format'
+import format from 'date-fns/esm/format'
 import * as chalk from 'chalk'
 
 import { parseUrl, getRoomIdByRoomUrlKey, getStreamingUrl, getRoomInfoByRoomId, getHeuristicChunkUrl, getRoomLiveInfo, RoomInfo } from './api'

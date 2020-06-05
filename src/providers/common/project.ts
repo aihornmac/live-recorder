@@ -4,7 +4,7 @@ import * as URL from 'url'
 import * as chalk from 'chalk'
 import { get } from '../../utils/request'
 import { parseM3U, M3U } from '../../utils/m3u'
-import { ensure, niceToHaveSync, niceToHave } from '../../utils/flow-control'
+import { ensure, niceToHaveSync, niceToHave, useBinaryExponentialBackoffAlgorithm, runSafely, SafeResult } from '../../utils/flow-control'
 import { later, predicate, times } from '../../utils/js'
 import { exec } from '../../utils/cli'
 import { fail, isErrorPayload } from '../../utils/error'
@@ -186,18 +186,18 @@ export class HLSProject {
     if (confident) {
       console.log(`downloading chunk [${id}] ${chunkUrl}`)
     }
-    const result = await download.result()
-    if (result.state === 'rejected') {
+    const ret = await download.result()
+    if (ret.state === 'rejected') {
       if (confident) {
         console.error(chalk.redBright(`Failed to download chunk [${id}] ${chunkUrl}`))
-        console.log(result.reason)
+        console.log(ret.error)
       }
-    } else if (result.ok) {
+    } else if (ret.result) {
       if (!confident) {
         console.log(chalk.whiteBright(`heuristic downloaded chunk [${id}] ${chunkUrl}`))
       }
     }
-    return result
+    return ret
   }
 
   async mergeStream() {
@@ -299,16 +299,8 @@ interface PlayListFile {
   parsed?: M3U
 }
 
-type ChunkDownloadResult = {
-  state: 'resolved'
-  ok: boolean
-} | {
-  state: 'rejected'
-  reason: unknown
-}
-
 class ChunkDownload {
-  private _promise: Promise<ChunkDownloadResult>
+  private _promise: Promise<SafeResult<boolean>>
 
   constructor(
     readonly id: number,
@@ -316,7 +308,7 @@ class ChunkDownload {
     readonly chunksPath: string,
     readonly confident: boolean
   ) {
-    this._promise = this._run()
+    this._promise = runSafely(() => this._run())
   }
 
   result() {
@@ -324,76 +316,49 @@ class ChunkDownload {
   }
 
   private async _run() {
-    return new Promise<ChunkDownloadResult>(async _resolve => {
-      let resolved = false
-      const resolve = (value: ChunkDownloadResult) => {
-        resolved = true
-        _resolve(value)
-      }
-
-      const run = async (interval: number) => {
-        if (resolved) return { state: 'resolved' as const, ok: false }
-        if (interval > 4000) {
-          if (this.confident) {
-            console.log(chalk.gray(`chunk ${this.id} download timeout ${interval}`))
-          }
+    const buffer = await useBinaryExponentialBackoffAlgorithm(async duration => {
+      if (duration > 4000) {
+        if (this.confident) {
+          console.log(chalk.gray(`chunk ${this.id} download timeout ${duration}`))
         }
-        const result = await this._download()
-        if (!resolved && result.state === 'resolved') {
-          resolve(result)
-        }
-        return result
       }
-
-      const results = await Promise.all([
-        run(0),
-        later(2000).then(() => run(2000)),
-        later(4000).then(() => run(4000)),
-        later(8000).then(() => run(8000)),
-        later(16000).then(() => run(16000)),
-        later(32000).then(() => run(32000)),
-        later(64000).then(() => run(64000)),
-      ])
-
-      if (!resolved) {
-        resolve(results[0])
-      }
+      return this._fetchBuffer()
+    }, {
+      startInterval: 2000,
+      maxRetry: 6,
     })
+    if (buffer) {
+      const ok = await niceToHave(async () => {
+        const { id, url, chunksPath } = this
+        const ext = path.extname(url).slice(1)
+        const filePath = path.join(chunksPath, `${id}${ext ? '.' + ext : ''}`)
+        await fs.promises.writeFile(filePath, buffer)
+        return true
+      })
+      if (ok) return true
+    }
+    return false
   }
 
-  private async _download() {
-    const { id, url, chunksPath } = this
-    return new Promise<ChunkDownloadResult>(async resolve => {
-      try {
-        const ok = await ensure(async () => {
-          const stream = await ensure(async () => {
-            const res = await get<NodeJS.ReadableStream>(url, {
-              validateStatus(status) {
-                return status >= 200 && status < 300 || status >= 400
-              },
-              responseType: 'stream',
-            })
-            if (res.status >= 200 && res.status < 300) {
-              return res.data
-            }
-            if (!this.confident && res.status === 404) return
-            return fail(`Request chunk ${id} returns ${res.status}`)
-          })
-          if (!stream) return false
-          if (isErrorPayload(stream)) throw stream
-          const ext = path.extname(url).slice(1)
-          const writeStream = fs.createWriteStream(path.join(chunksPath, `${id}${ext ? '.' + ext : ''}`))
-          stream.pipe(writeStream)
-          await new Promise((resolve, reject) => {
-            writeStream.on('finish', resolve)
-            writeStream.on('error', reject)
-          })
-          return true
+  private async _fetchBuffer(): Promise<Buffer | undefined> {
+    const { id, url } = this
+    return ensure(async () => {
+      const ret = await ensure(async () => {
+        const res = await get<Buffer>(url, {
+          validateStatus(status) {
+            return status >= 200 && status < 300 || status >= 400
+          },
+          responseType: 'arraybuffer',
         })
-        resolve({ state: 'resolved', ok })
-      } catch (e) {
-        resolve({ state: 'rejected', reason: e })
-      }
+        if (res.status >= 200 && res.status < 300) {
+          return res.data
+        }
+        if (!this.confident && res.status === 404) return
+        return fail(`Request chunk ${id} returns ${res.status}`)
+      })
+      if (!ret) return
+      if (isErrorPayload(ret)) throw ret
+      return ret
     })
   }
 }

@@ -50,6 +50,7 @@ function getWebpackConfiguration(): Configuration {
     plugins: [
       new ForkTsCheckerWebpackPlugin({
         silent: true,
+        tsconfig: tsConfigPath,
       }),
     ],
   }

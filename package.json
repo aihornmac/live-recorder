@@ -6,7 +6,7 @@
   "scripts": {
     "build": "ts-node -T --project tsconfig.json tools/build.ts",
     "tsc": "tsc --noEmit -p src/tsconfig.build.json",
-    "test": "mocha -r ts-node/register/transpile-only -r mock-local-storage test/**/*.test.ts",
+    "test": "mocha -r ts-node/register/transpile-only **/__tests__/**/*.test.ts",
     "try": "node -r ts-node/register/transpile-only tools/bin.ts"
   },
   "repository": {
@@ -28,6 +28,7 @@
   "homepage": "https://github.com/aihornmac/live-recorder#readme",
   "devDependencies": {
     "@types/chai": "^4.2.11",
+    "@types/chai-as-promised": "^7.1.2",
     "@types/chalk": "^2.2.0",
     "@types/date-fns": "^2.6.0",
     "@types/fork-ts-checker-webpack-plugin": "^0.4.5",
@@ -39,6 +40,7 @@
     "@types/yargs": "^15.0.5",
     "axios": "^0.19.2",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "chalk": "^4.0.0",
     "chrono-node": "^1.4.6",
     "date-fns": "^2.14.0",

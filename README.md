@@ -22,6 +22,10 @@ record live chat
 
     $ live-recorder --type livechat https://showroom-live.com/nekojita
 
+make an appointment in future
+
+    $ live-recorder --start-at '12:00 tomorrow' https://showroom-live.com/nekojita
+
 ## Supported Sites
 
 | Site | URL |

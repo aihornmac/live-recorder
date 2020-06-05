@@ -2,6 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import format from 'date-fns/esm/format'
 import * as chalk from 'chalk'
+import * as filenamify from 'filenamify'
 
 import { parseUrl, getRoomIdByRoomUrlKey, getStreamingUrl, getRoomInfoByRoomId, getHeuristicChunkUrl, getRoomLiveInfo, RoomInfo } from './api'
 import { HLSProject } from '../common/project'
@@ -27,13 +28,13 @@ export function match(url: string, options: CommonCreateOptions) {
 
   const getProjectPath = (roomInfo?: RoomInfo | void) => {
     const projectPath = options.projectPath || path.join(
-      (() => {
+      filenamify((() => {
         if (roomInfo) {
           const name = roomInfo.room_name || roomInfo.main_name
           if (name) return name
         }
         return info.data.name
-      })(),
+      })(), { replacement: '-' }),
       format(new Date(), 'yyyyLLddHHmmss'),
     )
     console.log(`writing to ${projectPath}`)

@@ -22,5 +22,5 @@ describe('useBinaryExponentialBackoffAlgorithm', () => {
     expect(durations).to.deep.equal([
       0, 20, 40, 80, 160, 320, 640
     ])
-  }).timeout(0)
+  }).timeout(700)
 })

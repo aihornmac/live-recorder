@@ -154,13 +154,17 @@ export class HLSProject {
       if (typeof mediaSequence === 'number') {
         // heuristic chunk probing
         niceToHave(() => {
-          if (!this._getHeuristicChunkUrl) {
+          if (this._getHeuristicChunkUrl) {
+            // try to trigger later forward probing
+            this.triggerHeuristicChunkDownload(mediaSequence, true)
+          } else {
+            // try to trigger first forward probing
             if (m3u.tracks.length) {
               const creator = this.options?.getHeuristicChunkUrl
               if (creator) {
                 const chunkUrl = URL.resolve(this._url, m3u.tracks[0].url)
                 this._getHeuristicChunkUrl = creator(mediaSequence, chunkUrl)
-                this.triggerHeuristicChunkDownload(mediaSequence)
+                this.triggerHeuristicChunkDownload(mediaSequence, false)
               }
             }
           }
@@ -277,7 +281,7 @@ export class HLSProject {
     return chunkDuration
   }
 
-  triggerHeuristicChunkDownload(startId: number) {
+  triggerHeuristicChunkDownload(startId: number, confident: boolean) {
     const getHeuristicChunkUrl = this._getHeuristicChunkUrl
     if (!getHeuristicChunkUrl) return
     const maxLength = 100
@@ -287,8 +291,9 @@ export class HLSProject {
     return niceToHave(async () => {
       return Promise.all(times(length, async i => {
         const id = cursorId + i
+        if (this._chunkDownloadMap.has(id)) return
         const url = getHeuristicChunkUrl(id)
-        return this.downloadChunk(id, url, false)
+        return this.downloadChunk(id, url, confident)
       }))
     })
   }

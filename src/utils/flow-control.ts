@@ -1,6 +1,6 @@
 import { MaybePromiseLike } from './types'
 import { isErrorPayload } from './error'
-import { later } from './js'
+import { cancellableLater } from './js'
 
 export async function ensure<T>(request: () => MaybePromiseLike<T>): Promise<T> {
   while (true) {
@@ -81,20 +81,25 @@ export function useBinaryExponentialBackoffAlgorithm<T>(
 
     let resolved = false
 
+    const errors: unknown[] = []
+    const runs: Array<Promise<unknown>> = []
+    const laters = new Set<ReturnType<typeof cancellableLater>>()
+
     const resolve = (value: T) => {
+      if (resolved) return
       resolved = true
       _resolve(value)
+      for (const { cancel } of laters) {
+        cancel()
+      }
+      laters.clear()
     }
-
-    const errors: unknown[] = []
 
     const run = async (interval: number) => {
       if (resolved) return
       const result = await runSafely(() => request(interval))
       if (result.state === 'resolved') {
-        if (!resolved) {
-          return resolve(result.result)
-        }
+        return resolve(result.result)
       } else {
         if (!errors.length) {
           errors.push(result.error)
@@ -102,17 +107,22 @@ export function useBinaryExponentialBackoffAlgorithm<T>(
       }
     }
 
-    run(0)
+    runs.push(run(0))
 
     let accumulated = 0
     let interval = startInterval
     for (let i = 0; i < maxRetry; i++) {
       if (resolved) return
-      await later(interval)
+      const ret = cancellableLater(interval)
+      laters.add(ret)
+      await ret.promise
+      if (resolved) return
       accumulated += interval
-      run(accumulated)
+      runs.push(run(accumulated))
       if (i) interval *= 2
     }
+
+    await Promise.all(runs)
 
     if (!resolved) {
       reject(errors[0])

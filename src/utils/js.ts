@@ -8,6 +8,18 @@ export function later(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+export function cancellableLater(ms: number) {
+  const { resolve, promise } = createExternalPromise<boolean>()
+  let timer: NodeJS.Timeout | undefined = setTimeout(() => resolve(true), ms)
+  const cancel = () => {
+    if (!timer) return
+    clearTimeout(timer)
+    timer = undefined
+    resolve(false)
+  }
+  return { cancel, promise }
+}
+
 export function entriesOf<T>(x: T): Array<ObjectEntryOf<T>> {
   return Object.entries(x) as Array<ObjectEntryOf<T>>
 }

@@ -12,7 +12,7 @@ export function parseM3U(content: string): M3U {
   for (const line of lines) {
     if (line.startsWith('#')) {
       if (line.startsWith('#EXTINF')) {
-        const matchTrackInfo = line.match(/^#EXTINF:([0-9.]+?)\b(.*?)(?:,(.*?))?$/)
+        const matchTrackInfo = line.match(/^#EXTINF:((?:[0-9]*[.])?[0-9]+?)([^0-9].*?)?(?:,(.*?))?$/)
         if (!matchTrackInfo) {
           throw new Error(`Cannot parse extinf ${JSON.stringify(line)}`)
         }

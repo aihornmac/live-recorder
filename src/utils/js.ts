@@ -10,7 +10,10 @@ export function later(ms: number) {
 
 export function cancellableLater(ms: number) {
   const { resolve, promise } = createExternalPromise<boolean>()
-  let timer: NodeJS.Timeout | undefined = setTimeout(() => resolve(true), ms)
+  let timer: NodeJS.Timeout | undefined = setTimeout(() => {
+    timer = undefined
+    resolve(true)
+  }, ms)
   const cancel = () => {
     if (!timer) return
     clearTimeout(timer)

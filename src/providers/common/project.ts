@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as URL from 'url'
+import * as os from 'os'
 import * as chalk from 'chalk'
 import { get } from '../../utils/request'
 import { parseM3U, M3U } from '../../utils/m3u'
@@ -236,15 +237,27 @@ export class HLSProject {
       //   const a = `ffmpeg -t ${duration} -f lavfi -i color=c=black:s=640x360 -c:v libx264 -tune stillimage -pix_fmt yuv420p ${id}.ts`
       // }))
     }
-    const concat = `concat:${times(ids.length, i => chunksFileMap.get(minId + i)).join('|')}`
-    const outputFilePath = path.join(path.resolve(process.cwd(), this._root), 'output.mp4')
-    const cdCommand = `cd ${JSON.stringify(path.resolve(process.cwd(), this._chunksPath))}`
-    const ffmpegCommand = `ffmpeg -i ${JSON.stringify(concat)} -c copy -bsf:a aac_adtstoasc -fflags +genpts ${JSON.stringify(outputFilePath)}`
-    const command = `${cdCommand} && ${ffmpegCommand}`
-    console.log()
-    console.log(command)
-    console.log()
-    await exec(command)
+    // inline concat command will throw `Too many files` error, hence use list file approach
+    const tmpPath = await fs.promises.mkdtemp(path.join(os.tmpdir(), `live-recorder-`))
+    try {
+      const relativePathFromRootToChunk = path.resolve(
+        path.resolve(process.cwd(), this._root),
+        path.resolve(process.cwd(), this._chunksPath),
+      )
+      const inputFileListContent = times(ids.length, i => `file '${path.join(relativePathFromRootToChunk, chunksFileMap.get(minId + i)!)}'`).join('\n')
+      const inputFileListPath = path.join(path.resolve(process.cwd(), this._root), 'manifest.txt')
+      await fs.promises.writeFile(inputFileListPath, inputFileListContent)
+      const outputFilePath = path.join(path.resolve(process.cwd(), this._root), 'output.mp4')
+      const cdCommand = `cd ${JSON.stringify(path.resolve(process.cwd(), this._chunksPath))}`
+      const ffmpegCommand = `ffmpeg -y -f concat -safe 0 -i ${JSON.stringify(inputFileListPath)} -c copy -bsf:a aac_adtstoasc -fflags +genpts ${JSON.stringify(outputFilePath)}`
+      const command = `${cdCommand} && ${ffmpegCommand}`
+      console.log()
+      console.log(command)
+      console.log()
+      await exec(command)
+    } finally {
+      await exec(`rm -rf ${JSON.stringify(tmpPath)}`)
+    }
   }
 
   async getChunksFileMap() {

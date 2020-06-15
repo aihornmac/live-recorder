@@ -41,6 +41,7 @@ export async function execute() {
   try {
     const inputType = type === 'livechat' ? 'livechat' : 'video'
     const run = dispatch(inputUrl, { projectPath: outputPath })
+    let waitDuration = 0
     if (startAt) {
       const startTime = parseDate(startAt)
       if (!startTime) {
@@ -49,9 +50,13 @@ export async function execute() {
       const durationText = formatDistance(startTime, new Date(), { addSuffix: true })
       console.log(chalk.greenBright(`Recording will start at ${startTime}  ( ${durationText} )`))
       const startTimestamp = +startTime
-      await later(Math.max(0, startTimestamp - Date.now()))
+      waitDuration = Math.max(0, startTimestamp - Date.now())
     }
-    await run[inputType]()
+    for await (const stage of run[inputType]()) {
+      if (stage === 'prepared') {
+        await later(waitDuration)
+      }
+    }
   } catch (e) {
     if (isErrorPayload(e)) {
       if (e.code === 'string') {

@@ -42,8 +42,9 @@ export function match(url: string, options: CommonCreateOptions) {
   }
 
   return {
-    async video() {
+    async * video() {
       const roomId = await getRoomId()
+      yield 'prepared' as const
       const roomInfoPromise = getRoomInfoByRoomId(roomId)
       // loop in case of broken stream
       while (true) {
@@ -60,8 +61,9 @@ export function match(url: string, options: CommonCreateOptions) {
         if (state === 'stopped') return
       }
     },
-    async livechat() {
+    async * livechat() {
       const roomId = await getRoomId()
+      yield 'prepared' as const
       const info = await ensure(async () => {
         const t0 = Date.now()
         const ret = await getRoomLiveInfo(roomId)

@@ -1,5 +1,10 @@
 import { ApplicationError, fail } from '../../utils/error'
 
+export interface CommonArgv {
+  readonly outputPath?: string
+  readonly startAt?: string
+}
+
 export interface CommonCreateOptions {
   readonly projectPath?: string
 }

@@ -1,17 +1,16 @@
 import * as chalk from 'chalk'
 
 import * as providers from './providers'
-import { CommonCreateOptions } from './common/typed-input'
 import { entriesOf } from '../utils/js'
 import { isErrorPayload, fail } from '../utils/error'
 
-export function dispatch(url: string, options: CommonCreateOptions) {
+export function dispatch(url: string) {
   if (!url){
     throw fail(chalk.redBright(`input url is empty`))
   }
   for (const entry of entriesOf(providers)) {
     const [name, methods] = entry
-    const ret = methods.match(url, options)
+    const ret = methods.match(url)
     if (isErrorPayload(ret)) {
       if (ret.code === 'provider mismatch') continue
       const { data } = ret

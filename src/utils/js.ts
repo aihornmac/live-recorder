@@ -1,11 +1,34 @@
-import { ObjectEntryOf } from './types'
+import { ObjectEntryOf, MaybePromise } from './types'
 
 export function isObjectHasKey<M extends {}>(obj: M, key: string): key is string & keyof M {
   return Object.prototype.hasOwnProperty.call(obj, key)
 }
 
-export function later(ms: number) {
+const MAX_LATER_DURATION = 3600000
+
+export async function later(ms: number) {
+  if (ms > MAX_LATER_DURATION) {
+    const t0 = Date.now()
+    const t1 = t0 + ms
+    while (true) {
+      const rest = Math.max(t1 - Date.now())
+      if (rest > MAX_LATER_DURATION) {
+        await later(MAX_LATER_DURATION)
+      } else if (rest > 0) {
+        await later(rest)
+      } else {
+        break
+      }
+    }
+  }
   return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+export async function * interval(ms: number) {
+  while (true) {
+    await later(ms)
+    yield
+  }
 }
 
 export function cancellableLater(ms: number) {
@@ -54,4 +77,32 @@ export function createExternalPromise<T>(): ExternalPromise<T> {
     reject = rej
   })
   return { resolve, reject, promise }
+}
+
+export function call<T>(fn: () => T) {
+  return fn()
+}
+
+export function createSequancePromise<T = void>() {
+  let prev = Promise.resolve()
+  let currentCount = 0
+  return function then(cb: (index: number) => MaybePromise<T>) {
+    const index = currentCount++
+    const promise = prev.then(() => cb(index))
+    prev = promise.then(noop, console.error)
+    return promise
+  }
+}
+
+export const noop = () => {}
+
+export function dashToCamel(str: string) {
+  const parts = str.split('-')
+  const { length } = parts
+  let s = parts[0]
+  for (let i = 1; i < length; i++) {
+    const a = parts[1]
+    s += a[0].toLocaleUpperCase() + a.slice(1)
+  }
+  return s
 }

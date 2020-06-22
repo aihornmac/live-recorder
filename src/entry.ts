@@ -1,47 +1,36 @@
 import * as yargs from 'yargs'
 import { parseDate } from 'chrono-node'
-import formatDistance from 'date-fns/esm/formatDistance'
+import { formatDistance } from 'date-fns'
 import { dispatch } from './providers/dispatch'
 import { isErrorPayload, fail } from './utils/error'
 import chalk = require('chalk')
 import { later } from './utils/js'
 
 export async function execute() {
-  const argv = (
-    yargs
-    .strict()
-    .parserConfiguration({ 'boolean-negation': false })
-    .option('outputPath', {
-      type: 'string',
-      nargs: 1,
-      demandOption: false,
-      describe: 'Specify output project path',
-    })
-    .alias('o', 'outputPath')
-    .option('type', {
-      type: 'string',
-      nargs: 1,
-      demandOption: false,
-      describe: 'Specify record type. e.g. video / livechat',
-    })
-    .option('startAt', {
-      type: 'string',
-      nargs: 1,
-      demandOption: false,
-      describe: 'Specify record start time based on your local timezone',
-    })
-    .help('h')
-    .alias('h', 'help')
-    .parse()
-  )
-
-  const { outputPath, type, startAt } = argv
-  const inputUrl = argv._[0]
+  const inputUrl = yargs.help(false).parse()._[0] || ''
 
   try {
-    const inputType = type === 'livechat' ? 'livechat' : 'video'
-    const run = dispatch(inputUrl, { projectPath: outputPath })
-    let waitDuration = 0
+    const provider = dispatch(inputUrl)(
+      yargs
+      .strict()
+      .parserConfiguration({ 'boolean-negation': false })
+      .version(false)
+      .option('outputPath', {
+        type: 'string',
+        nargs: 1,
+        demandOption: false,
+        describe: 'Specify output project path',
+      })
+      .alias('o', 'outputPath')
+      .option('startAt', {
+        type: 'string',
+        nargs: 1,
+        demandOption: false,
+        describe: 'Specify record start time based on your local timezone',
+      })
+    )
+    const { startAt, outputPath } = provider.argv()
+    let recordStartAt = Date.now()
     if (startAt) {
       const startTime = parseDate(startAt)
       if (!startTime) {
@@ -49,12 +38,11 @@ export async function execute() {
       }
       const durationText = formatDistance(startTime, new Date(), { addSuffix: true })
       console.log(chalk.greenBright(`Recording will start at ${startTime}  ( ${durationText} )`))
-      const startTimestamp = +startTime
-      waitDuration = Math.max(0, startTimestamp - Date.now())
+      recordStartAt = +startTime
     }
-    for await (const stage of run[inputType]()) {
+    for await (const stage of provider.execute({ projectPath: outputPath })) {
       if (stage === 'prepared') {
-        await later(waitDuration)
+        await later(Math.max(0, recordStartAt - Date.now()))
       }
     }
   } catch (e) {

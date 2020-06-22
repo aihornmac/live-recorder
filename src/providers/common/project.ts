@@ -1,15 +1,15 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as URL from 'url'
-import * as os from 'os'
+import { Readable } from 'stream'
 import * as chalk from 'chalk'
 import { get } from '../../utils/request'
-import { parseM3U, M3U } from '../../utils/m3u'
-import { ensure, niceToHaveSync, niceToHave, useBinaryExponentialBackoffAlgorithm, runSafely, SafeResult } from '../../utils/flow-control'
-import { later, predicate, times } from '../../utils/js'
-import { exec } from '../../utils/cli'
+import { M3UReader, M3UActionTrack } from '../../utils/m3u'
+import { ensure, niceToHave, useBinaryExponentialBackoffAlgorithm, runSafely, SafeResult } from '../../utils/flow-control'
+import { later, predicate, times, call, createExternalPromise } from '../../utils/js'
 import { fail, isErrorPayload } from '../../utils/error'
 import { Clicker } from '../../utils/clicker'
+import { readlineFromBuffer } from '../../utils/readline'
 
 export interface HLSProjectOptions {
   readonly getHeuristicChunkUrl?: (id: number, url: string) => (id: number) => string
@@ -145,13 +145,33 @@ export class HLSProject {
     if (this._isStopped) return 'stopped'
 
     const raw = res.data
-    const m3u = niceToHaveSync(() => parseM3U(raw))
+    const m3u = await niceToHave(async () => {
+      const reader = new M3UReader()
+      for await (const line of readlineFromBuffer(raw)) {
+        reader.push(line)
+      }
+      let mediaSequence: number | undefined
+      const tracks = Array.from(call(function *() {
+        for (const action of reader.actions) {
+          if (action.kind === 'track') {
+            yield action
+          } else if (action.kind === 'extension' && action.key === 'MEDIA-SEQUENCE') {
+            const value = +action.value
+            if (Number.isFinite(value)) {
+              mediaSequence = value
+            }
+          }
+        }
+      }))
+      return { mediaSequence, tracks }
+    })
     niceToHave(async () => {
-      const json = JSON.stringify({ raw, parsed: m3u }, null, 2)
+      const content: PlayListFile = { raw, parsed: m3u }
+      const json = JSON.stringify(content, null, 2)
       await fs.promises.writeFile(path.join(this._playListsPath, `${t0}.json`), json)
     })
     if (m3u) {
-      const { mediaSequence } = m3u.extension
+      const { mediaSequence } = m3u
       if (typeof mediaSequence === 'number') {
         // heuristic chunk probing
         niceToHave(() => {
@@ -226,38 +246,21 @@ export class HLSProject {
     }
     if (missedIds.length) {
       throw fail(`Failed to merge due to missing chunks`)
-      // for (const missedId of missedIds) {
-      //   if (!chunkDurationMap.has(missedId)) {
-      //     throw fail(chalk.redBright(`Unable to determine duration of chunk ${missedId}`))
-      //   }
-      // }
-      // const tmpPath = await fs.promises.mkdtemp(path.join(os.tmpdir(), `live-recorder-`))
-      // await Promise.all(missedIds.map(id => {
-      //   const duration = chunkDurationMap.get(id)!
-      //   const a = `ffmpeg -t ${duration} -f lavfi -i color=c=black:s=640x360 -c:v libx264 -tune stillimage -pix_fmt yuv420p ${id}.ts`
-      // }))
     }
-    // inline concat command will throw `Too many files` error, hence use list file approach
-    const tmpPath = await fs.promises.mkdtemp(path.join(os.tmpdir(), `live-recorder-`))
-    try {
-      const relativePathFromRootToChunk = path.resolve(
-        path.resolve(process.cwd(), this._root),
-        path.resolve(process.cwd(), this._chunksPath),
-      )
-      const inputFileListContent = times(ids.length, i => `file '${path.join(relativePathFromRootToChunk, chunksFileMap.get(minId + i)!)}'`).join('\n')
-      const inputFileListPath = path.join(path.resolve(process.cwd(), this._root), 'manifest.txt')
-      await fs.promises.writeFile(inputFileListPath, inputFileListContent)
-      const outputFilePath = path.join(path.resolve(process.cwd(), this._root), 'output.mp4')
-      const cdCommand = `cd ${JSON.stringify(path.resolve(process.cwd(), this._chunksPath))}`
-      const ffmpegCommand = `ffmpeg -y -f concat -safe 0 -i ${JSON.stringify(inputFileListPath)} -c copy -bsf:a aac_adtstoasc -fflags +genpts ${JSON.stringify(outputFilePath)}`
-      const command = `${cdCommand} && ${ffmpegCommand}`
-      console.log()
-      console.log(command)
-      console.log()
-      await exec(command)
-    } finally {
-      await exec(`rm -rf ${JSON.stringify(tmpPath)}`)
-    }
+    const outputFilePath = path.join(path.resolve(process.cwd(), this._root), 'output.mp4')
+    const chunksPath = path.resolve(process.cwd(), this._chunksPath)
+    const writeStream = fs.createWriteStream(outputFilePath)
+    const readStream = Readable.from(call(async function *() {
+      for (let id = minId; id <= maxId; id++) {
+        const filename = `${id}.ts`
+        yield * fs.createReadStream(path.join(chunksPath, filename))
+      }
+    }))
+    readStream.pipe(writeStream)
+    const xp = createExternalPromise<void>()
+    writeStream.on('error', xp.reject)
+    writeStream.on('finish', xp.resolve)
+    await xp.promise
   }
 
   async getChunksFileMap() {
@@ -283,7 +286,7 @@ export class HLSProject {
     ).filter(predicate)
     const chunkDuration = new Map<number, number>()
     for (const item of list) {
-      const { mediaSequence } = item.extension
+      const { mediaSequence } = item
       if (typeof mediaSequence !== 'number') continue
       let i = -1
       for (const track of item.tracks) {
@@ -315,6 +318,11 @@ export class HLSProject {
 interface PlayListFile {
   raw: string
   parsed?: M3U
+}
+
+interface M3U {
+  mediaSequence?: number
+  tracks: M3UActionTrack[]
 }
 
 class ChunkDownload {

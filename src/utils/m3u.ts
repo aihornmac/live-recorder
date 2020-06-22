@@ -1,99 +1,154 @@
 const propertyReg = /^"?([^"]+?)"?="?([^"]+?)"?$/
 const propertyRegGlobal = new RegExp(propertyReg, 'g')
 
-export function parseM3U(content: string): M3U {
-  const lines = content.split(/[\r\n]/).filter(Boolean).map(x => x.trim())
-  if (lines[0] !== '#EXTM3U') {
-    throw new Error(`the first line must be #EXTM3U`)
-  }
-  const tracks: M3UTrack[] = []
-  const extension: M3UAppleExtension = {}
-  let isReadingTrackUrl = false
-  for (const line of lines) {
-    if (line.startsWith('#')) {
-      if (line.startsWith('#EXTINF')) {
-        const matchTrackInfo = line.match(/^#EXTINF:((?:[0-9]*[.])?[0-9]+?)([^0-9].*?)?(?:,(.*?))?$/)
-        if (!matchTrackInfo) {
-          throw new Error(`Cannot parse extinf ${JSON.stringify(line)}`)
-        }
-        const propertiesString = matchTrackInfo[2]
-        const matchProperties = propertiesString.match(propertyRegGlobal)
-        const properties: { [key: string]: string } = {}
-        if (matchProperties) {
-          for (const str of matchProperties) {
-            const matchProperty = str.trim().match(propertyReg)!
-            const key = matchProperty[1]
-            const value = matchProperty[2]
-            properties[key] = value
-          }
-        }
-        const title = matchTrackInfo[3]
-        tracks.push({
-          title,
-          duration: +matchTrackInfo[1],
-          url: '',
-          properties: {},
-        })
-        isReadingTrackUrl = true
-      } else {
-        isReadingTrackUrl = false
+export class M3UReader {
+  readonly actions: M3UAction[] = []
 
-        if (line.startsWith('#EXT-X-')) {
-          const matchKeyValue = line.match(/^#EXT-X-(.*?):(.*?)$/)
-          if (!matchKeyValue) {
-            throw new Error(`Cannot parse ext-x ${JSON.stringify(line)}`)
-          }
-          const key = matchKeyValue[1]
-          const value = matchKeyValue[2]
-          if (key === 'VERSION') {
-            extension.version = +value
-          } else if (key === 'TARGETDURATION') {
-            extension.targetDuration = +value
-          } else if (key === 'MEDIA-SEQUENCE') {
-            extension.mediaSequence = +value
-          } else if (key === 'PROGRAM-DATE-TIME') {
-            extension.programeDataTime = new Date(value)
-          } else {
-            const map = extension.unknown || (extension.unknown = {})
-            map[key] = value
-          }
-        }
+  private _index = 0
+  private _ctx?: M3UActionTrack | M3UActionStream
+
+  push(line: string) {
+    const ctx = this._ctx
+    this._ctx = undefined
+    const index = this._index++
+
+    // match track
+    if (line.startsWith('#EXTINF')) {
+      this._ctx = {
+        ...parseTrack(line),
+        kind: 'track',
       }
+      return
+    }
+
+    // match stream
+    if (line.startsWith('#EXT-X-STREAM-INF')) {
+      this._ctx = {
+        kind: 'stream',
+        value: parseExtension(line).value,
+        url: '',
+      }
+      return
+    }
+
+    // match extension
+    if (line.startsWith('#EXT-X')) {
+      const action: M3UActionExtension = {
+        ...parseExtension(line),
+        kind: 'extension',
+      }
+      this.actions.push(action)
+      return action
+    }
+
+    // ignore file header
+    if (line === '#EXTM3U') return
+
+    if (ctx) {
+      // match track or stream
+      ctx.url = line
+      this.actions.push(ctx)
+      return ctx
     } else {
-      const track = tracks[tracks.length - 1]
-      if (!isReadingTrackUrl || !track) {
-        throw new Error(`Is not reaodnly track url`)
-      }
-      isReadingTrackUrl = false
-      track.url = line.trim()
+      // unknown action
+      const action: M3UActionUnknown = { kind: 'unknown', line, index }
+      this.actions.push(action)
+      return action
     }
   }
+}
+
+function parseTrack(line: string): Omit<M3UActionTrack, 'kind'> {
+  const matchTrackInfo = line.match(/^#EXTINF:((?:[0-9]*[.])?[0-9]+?)([^0-9].*?)?(?:,(.*?))?$/)
+  if (!matchTrackInfo) {
+    throw new Error(`Cannot parse extinf ${JSON.stringify(line)}`)
+  }
+  const propertiesString = matchTrackInfo[2]
+  const matchProperties = propertiesString.match(propertyRegGlobal)
+  const properties: { [key: string]: string } = {}
+  if (matchProperties) {
+    for (const str of matchProperties) {
+      const matchProperty = str.trim().match(propertyReg)!
+      const key = matchProperty[1]
+      const value = matchProperty[2]
+      properties[key] = value
+    }
+  }
+  const title = matchTrackInfo[3]
   return {
-    tracks,
-    extension,
+    title,
+    duration: +matchTrackInfo[1],
+    url: '',
   }
 }
 
-export interface M3U {
-  tracks: M3UTrack[]
-  extension: M3UAppleExtension
+function parseExtension(line: string): Omit<M3UActionExtension, 'kind'> {
+  const matchKeyValue = line.match(/^#EXT-X-(.*?)(?::(.*?))?$/)
+  if (!matchKeyValue) {
+    throw new Error(`Cannot parse ext-x ${JSON.stringify(line)}`)
+  }
+  const key = matchKeyValue[1]
+  const value: string | undefined = matchKeyValue[2]
+  return { key, value }
 }
 
-export interface M3UAppleExtension {
-  version?: number
-  targetDuration?: number
-  mediaSequence?: number
-  programeDataTime?: Date
-  unknown?: {
-    [key: string]: string
+export function parseProperties(input: string) {
+  const properties = new Map<string, string>()
+  for (const match of matchAll(/(?:"(?<k1>[^"]*?)"|(?<k2>[^"=, \s]+?))=(?:"(?<v1>[^"]*?)"|(?<v2>[^"=, \s]+?)),/g, input + ',', )) {
+    const { groups } = match
+    if (!groups) continue
+    const key = groups.k1 ?? groups.k2
+    const value = groups.v1 ?? groups.v2
+    properties.set(key, value)
+  }
+  return properties
+}
+
+function matchAll(reg: RegExp, input: string) {
+  if (reg.lastIndex !== 0) {
+    throw new Error(`reg is not reset`)
+  }
+  const results: RegExpExecArray[] = []
+  try {
+    while (true) {
+      const ret = reg.exec(input)
+      if (!ret) break
+      results.push(ret)
+    }
+    return results
+  } finally {
+    reg.lastIndex = 0
   }
 }
 
-export interface M3UTrack {
-  title: string,
+export type M3UAction = (
+  | M3UActionTrack
+  | M3UActionStream
+  | M3UActionExtension
+  | M3UActionUnknown
+)
+
+export interface M3UActionTrack {
+  kind: 'track'
+  title?: string
   duration: number
   url: string
-  properties: {
-    [key: string]: string
-  }
+}
+
+export interface M3UActionStream {
+  kind: 'stream'
+  value: string
+  url: string
+}
+
+export interface M3UActionExtension {
+  kind: 'extension'
+  key: string
+  value: string
+}
+
+export interface M3UActionUnknown {
+  kind: 'unknown'
+  index: number
+  line: string
 }

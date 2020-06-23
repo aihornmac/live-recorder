@@ -20,8 +20,9 @@ export async function later(ms: number) {
         break
       }
     }
+  } else {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
-  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export async function * interval(ms: number) {

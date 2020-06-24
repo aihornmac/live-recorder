@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.18] - 2020-06-25
+### Added
+- cope with SHOWROOM live interruption
+
 ## [0.0.17] - 2020-06-24
 ### Added
 - add supports for more AbemaTV stream type: `onair` `serires` `season` `episode`

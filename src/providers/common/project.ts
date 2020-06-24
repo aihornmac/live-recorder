@@ -10,6 +10,7 @@ import { later, predicate, times, call, createExternalPromise } from '../../util
 import { fail, isErrorPayload } from '../../utils/error'
 import { Clicker } from '../../utils/clicker'
 import { readlineFromBuffer } from '../../utils/readline'
+import { exists } from '../../utils/fs'
 
 export interface HLSProjectOptions {
   readonly getHeuristicChunkUrl?: (id: number, url: string) => (id: number) => string
@@ -233,27 +234,21 @@ export class HLSProject {
     if (!ids.length) return
     const minId = Math.min(...ids)
     const maxId = Math.max(...ids)
-    const missedIds: number[] = []
-    const chunkNames: string[] = []
-    for (let i = minId; i <= maxId; i++) {
-      const chunkFileName = chunksFileMap.get(i)
-      if (chunkFileName) {
-        chunkNames.push(chunkFileName)
-      } else {
-        console.error(chalk.yellowBright(`Missing chunk ${i}`))
-        missedIds.push(i)
-      }
-    }
-    if (missedIds.length) {
-      throw fail(`Failed to merge due to missing chunks`)
-    }
     const outputFilePath = path.join(path.resolve(process.cwd(), this._root), 'output.mp4')
     const chunksPath = path.resolve(process.cwd(), this._chunksPath)
     const writeStream = fs.createWriteStream(outputFilePath)
     const readStream = Readable.from(call(async function *() {
       for (let id = minId; id <= maxId; id++) {
-        const filename = `${id}.ts`
-        yield * fs.createReadStream(path.join(chunksPath, filename))
+        const chunkFileName = chunksFileMap.get(id)
+        if (chunkFileName) {
+          const filename = `${id}.ts`
+          const filePath = path.join(chunksPath, filename)
+          if (await exists(filePath)) {
+            yield * fs.createReadStream(filePath)
+            continue
+          }
+        }
+        console.error(chalk.yellowBright(`Missing chunk ${id}`))
       }
     }))
     readStream.pipe(writeStream)
@@ -379,7 +374,13 @@ class ChunkDownload {
         if (res.status >= 200 && res.status < 300) {
           return res.data
         }
-        if (!this.confident && res.status === 404) return
+        if (res.status === 404) {
+          if (this.confident) {
+            // this happens when live has interruption
+            console.error(chalk.yellowBright(`Request chunk ${id} returns ${res.status}`))
+          }
+          return
+        }
         return fail(`Request chunk ${id} returns ${res.status}`)
       })
       if (!ret) return

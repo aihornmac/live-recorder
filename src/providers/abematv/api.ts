@@ -46,8 +46,6 @@ export async function getHLSLicenseFromTicket(mediaToken: string, ticket: string
 
 const HKEY = Buffer.from('3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E', 'hex')
 
-HKEY.toString('utf8')
-
 const SECRET_KEY = Buffer.from(
   "v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9B" +
   "Rbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$" +

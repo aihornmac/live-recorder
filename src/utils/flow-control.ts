@@ -1,4 +1,4 @@
-import { MaybePromiseLike } from './types'
+import { MaybePromiseLike, MaybePromise } from './types'
 import { isErrorPayload } from './error'
 import { cancellableLater } from './js'
 
@@ -147,4 +147,18 @@ export async function runSafely<T>(fn: () => T | PromiseLike<T>): Promise<SafeRe
   } catch (e) {
     return { state: 'rejected', error: e as unknown }
   }
+}
+
+export async function exaustList<T>(
+  limit: number,
+  fn: (offset: number, limit: number) => MaybePromise<readonly T[]>,
+): Promise<T[]> {
+  const results: T[] = []
+  let offset = 0
+  while (true) {
+    const list = await fn(offset, limit)
+    results.push(...list)
+    if (list.length < limit) break
+  }
+  return results
 }

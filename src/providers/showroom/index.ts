@@ -14,10 +14,6 @@ import { ensure, niceToHave } from '../../utils/flow-control'
 import { later } from '../../utils/js'
 import * as yargs from 'yargs'
 
-export interface Argv {
-  type?: string
-}
-
 export function match(url: URL) {
   const info = parseUrl(url)
   if (info.kind === 'error') return info

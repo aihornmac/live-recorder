@@ -85,6 +85,14 @@ export class PipeStream<T> {
       xp.resolve({ done: true, value: undefined })
     }
   }
+
+  async * [Symbol.asyncIterator]() {
+    while (true) {
+      const ret = await this.read()
+      if (ret.done) return ret.value
+      yield ret.value
+    }
+  }
 }
 
 export type StreamResult<T> = {

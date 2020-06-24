@@ -1,0 +1,158 @@
+{
+  "slot": {
+    "id": "CVRwGHtj4nsuF5",
+    "title": "乃木坂46時間TV アベマ独占放送「はなれてたって、ぼくらはいっしょ！」DAY2",
+    "startAt": 1592578800,
+    "endAt": 1592665200,
+    "programs": [
+      {
+        "id": "526-2_s1_p2",
+        "episode": {
+          "sequence": 2
+        },
+        "credit": {
+          "casts": [
+            "乃木坂46",
+            "秋元真夏",
+            "生田絵梨花",
+            "伊藤純奈",
+            "伊藤理々杏",
+            "岩本蓮加",
+            "梅澤美波",
+            "遠藤さくら",
+            "大園桃子",
+            "賀喜遥香",
+            "掛橋沙耶香",
+            "金川紗耶",
+            "北川悠理",
+            "北野日奈子",
+            "久保史緒里",
+            "黒見明香",
+            "齋藤飛鳥",
+            "阪口珠美",
+            "佐藤楓",
+            "佐藤璃果",
+            "柴田柚菜",
+            "新内眞衣",
+            "鈴木絢音",
+            "清宮レイ",
+            "高山一実",
+            "田村真佑",
+            "筒井あやめ",
+            "寺田蘭世",
+            "中田花奈",
+            "中村麗乃",
+            "早川聖来",
+            "林瑠奈",
+            "樋口日奈",
+            "星野みなみ",
+            "堀未央奈",
+            "松尾美佑",
+            "松村沙友理",
+            "向井葉月",
+            "矢久保美緒",
+            "山崎怜奈",
+            "山下美月",
+            "弓木奈於",
+            "吉田綾乃クリスティー",
+            "与田祐希",
+            "渡辺みり愛",
+            "和田まあや",
+            "(50音順)"
+          ],
+          "copyrights": [
+            "(C)AbemaTV, Inc."
+          ]
+        },
+        "series": {
+          "id": "526-2",
+          "themeColor": {},
+          "genreId": "variety",
+          "updatedAt": 1589864211
+        },
+        "providedInfo": {
+          "thumbImg": "thumb001",
+          "updatedAt": 1592293478
+        }
+      }
+    ],
+    "tableStartAt": 1592578800,
+    "tableEndAt": 1592665200,
+    "highlight": "乃木坂46時間TV DAY2放送中！",
+    "detailHighlight": "【この番組は放送後、見逃し視聴が可能！今すぐマイビデオに追加しよう！】",
+    "content": "「乃木坂46時間TV」アベマ独占放送が決定！\n6月19日（金）よる7時〜6月21日（日）ごご5時まで46時間生放送予定！\n\n\"\"はなれてたって、ぼくらはいっしょ！\"\"をテーマに全メンバーがノンストップで様々な企画に挑戦！\nタイムテーブルもついに解禁！「乃木坂電視台」「人狼ミッドナイト」を始めとした恒例企画はもちろん、多彩な企画が目白押し！\n\n★今回初の企画！『1期2期3期4期・期別冠番組コーナー』\n1期・9年目の同期会\n2期・生で修学旅行の夜\n3期・3期生運動能力女王決定戦\n4期・みんなでお菓子の家を作ろう\n\n★アベマ人気番組「オオカミ」シリーズコラボ企画！\n視聴者参加型企画・豪華料理争奪バトル『オオカミちゃんは食べられない』\nABEMAの4択アンケート機能を使い「噓つきオオカミちゃん」だと思うメンバーに投票。\n最後まで嘘を隠し通し、豪華料理をゲットできる「オオカミちゃん」は一体誰だ!?\n\n★特別企画「46時間後に那須川天心」！\nRISE世界フェザー級王者 那須川天心 コラボ！\nSNSで話題となった『#100日後に那須川天心』にちなんだ特別企画\n天心指導のもとメンバーがエクササイズに挑戦!?\n\n★プロ麻雀リーグ「Mリーグ」コラボ！『熱闘!Nリーグ』\nメンバー達がオリジナルルールで麻雀風の新競技“乃木雀”に挑戦！\n世界にひとつ乃木坂メンバーの顔入りオリジナル牌も登場！\n\nなどなど‥更に番組のフィナーレを飾る特別企画も！\nお見逃しなく！\n\n※ABEMAのみで見逃し配信がございます。",
+    "displayProgramId": "526-2_s1_p2",
+    "mark": {
+      "live": true,
+      "recommendation": true
+    },
+    "flags": {
+      "share": true,
+      "timeshift": true,
+      "sharingPolicy": 1,
+      "timeshiftFree": true,
+      "chasePlay": true,
+      "archiveComment": true
+    },
+    "channelId": "special-plus",
+    "timeshiftEndAt": 1595257200,
+    "slotGroup": {
+      "id": "C744uZ5cLhhpzT",
+      "name": "乃木坂46時間TV「離れてたって、僕らは一緒！」_2020.05",
+      "lastSlotId": "C744xtbUhaZVFM"
+    },
+    "hashtag": "46時間TV",
+    "links": [
+      {
+        "value": "https://abema.tv/channels/special-plus/slots/C744uFrJyBWGEB",
+        "type": 2,
+        "title": "放送記念！オンライン記者会見&乃木坂46分TV"
+      },
+      {
+        "value": "https://www.instagram.com/nogizaka46_tv/",
+        "type": 2,
+        "title": "番組公式Instagram"
+      },
+      {
+        "value": "https://lin.ee/2xo8Rbj",
+        "type": 2,
+        "title": "乃木坂46会見写真が見れる！LINEキャンペーン"
+      }
+    ],
+    "timeshiftFreeEndAt": 1593270000,
+    "sharedLink": {
+      "twitter": "https://gxyt4.app.goo.gl/JG5WV",
+      "facebook": "https://gxyt4.app.goo.gl/PrV9G",
+      "google": "https://gxyt4.app.goo.gl/JFoVt",
+      "line": "https://gxyt4.app.goo.gl/ZKzQK",
+      "copy": "https://gxyt4.app.goo.gl/aD6TB",
+      "screen": "https://gxyt4.app.goo.gl/ViNTs",
+      "instagram": "https://gxyt4.app.goo.gl/7pE66"
+    },
+    "playback": {
+      "hls": "https://ds-vod-abematv.akamaized.net/slot/CVRwGHtj4nsuF5/playlist.m3u8",
+      "dash": "https://ds-vod-abematv.akamaized.net/slot/CVRwGHtj4nsuF5/manifest.mpd",
+      "hlsPreview": "https://ds-vod-abematv.akamaized.net/preview/slot/CVRwGHtj4nsuF5/playlist.m3u8",
+      "dashIPTV": "https://ds-vod-abematv.akamaized.net/slot/CVRwGHtj4nsuF5/manifest.mpd"
+    },
+    "externalContent": {
+      "buttonText": "購入する",
+      "marks": {}
+    },
+    "reservable": true,
+    "download": {
+      "enable": true
+    },
+    "chasePlayback": {
+      "hls": "https://ds-vod-abematv.akamaized.net/chase/slot/CVRwGHtj4nsuF5/playlist.m3u8"
+    },
+    "broadcastRegionPolicies": {
+      "linear": 1,
+      "timeshift": 1
+    },
+    "timelineThumbComponent": {
+      "urlPrefix": "https://hayabusa.io/abema/slots/CVRwGHtj4nsuF5/EoWp4mYtEm9uwM/timeline",
+      "extension": "png"
+    }
+  }
+}

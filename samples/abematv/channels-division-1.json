@@ -1,0 +1,350 @@
+[
+  {
+    "id": "news-global",
+    "name": "海外Newsチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/news-global/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/news-global/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/news-global/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/news-global/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 2,
+    "status": {}
+  },
+  {
+    "id": "abema-news",
+    "name": "ABEMA NEWSチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-news/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-news/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-news/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/abema-news/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "news-plus",
+    "name": "ABEMA NEWS緊急チャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/news-plus/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/news-plus/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/news-plus/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/news-plus/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "abema-special",
+    "name": "ABEMA SPECIALチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-special/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-special/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-special/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/abema-special/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "special-plus",
+    "name": "ABEMA SPECIAL 2チャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/special-plus/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/special-plus/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/special-plus/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/special-plus/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "special-plus-2",
+    "name": "ABEMA GOLDチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/special-plus-2/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/special-plus-2/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/special-plus-2/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/special-plus-2/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "drama",
+    "name": "ドラマチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/drama/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/drama/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/drama/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/drama/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "asia-drama",
+    "name": "韓流・華流チャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/asia-drama/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/asia-drama/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/asia-drama/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/asia-drama/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "asia-drama-2",
+    "name": "韓流・華流チャンネル2",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/asia-drama-2/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/asia-drama-2/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/asia-drama-2/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/asia-drama-2/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "k-world",
+    "name": "K WORLDチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/k-world/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/k-world/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/k-world/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/k-world/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {}
+  },
+  {
+    "id": "abema-anime",
+    "name": "ABEMA アニメ",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-anime/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-anime/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-anime/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/abema-anime/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "abema-anime-2",
+    "name": "ABEMA アニメ2",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-anime-2/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-anime-2/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-anime-2/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/abema-anime-2/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "anime-live",
+    "name": "アニメLIVE",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/anime-live/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/anime-live/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/anime-live/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/anime-live/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "anime-live2",
+    "name": "アニメLIVE2",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/anime-live2/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/anime-live2/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/anime-live2/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/anime-live2/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "everybody-anime",
+    "name": "みんなのアニメ",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/everybody-anime/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/everybody-anime/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/everybody-anime/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/everybody-anime/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "everybody-anime2",
+    "name": "みんなのアニメ2",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/everybody-anime2/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/everybody-anime2/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/everybody-anime2/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/everybody-anime2/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {
+      "drm": true
+    }
+  },
+  {
+    "id": "commercial",
+    "name": "CMチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/commercial/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/commercial/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/commercial/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/commercial/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "discovery",
+    "name": "Dplay by Discovery",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/discovery/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/discovery/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/discovery/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/discovery/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "mtv-hits",
+    "name": "MTV HITSチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/mtv-hits/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/mtv-hits/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/mtv-hits/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/mtv-hits/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "hiphop",
+    "name": "HIPHOPチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/hiphop/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/hiphop/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/hiphop/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/hiphop/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "abema-radio",
+    "name": "ABEMA RADIOチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-radio/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-radio/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/abema-radio/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/abema-radio/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "fighting-sports",
+    "name": "格闘チャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/fighting-sports/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/fighting-sports/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/fighting-sports/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/fighting-sports/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {}
+  },
+  {
+    "id": "world-sports",
+    "name": "SPORTSチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/world-sports/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/world-sports/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/world-sports/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/world-sports/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "keirin-auto",
+    "name": "競輪・オートレースチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/keirin-auto/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/keirin-auto/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/keirin-auto/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/keirin-auto/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 1,
+    "status": {}
+  },
+  {
+    "id": "fishing",
+    "name": "釣りチャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/fishing/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/fishing/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/fishing/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/fishing/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {}
+  },
+  {
+    "id": "shogi",
+    "name": "将棋チャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/shogi/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/shogi/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/shogi/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/shogi/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {}
+  },
+  {
+    "id": "mahjong",
+    "name": "麻雀チャンネル",
+    "playback": {
+      "hls": "https://ds-glb-linear-abematv.akamaized.net/channel/mahjong/playlist.m3u8?global=1",
+      "dash": "https://ds-glb-linear-abematv.akamaized.net/channel/mahjong/manifest.mpd?global=1",
+      "dashIPTV": "https://ds-glb-linear-abematv.akamaized.net/channel/mahjong/manifest.mpd?global=1",
+      "hlsPreview": "https://ds-glb-linear-abematv.akamaized.net/preview/channel/mahjong/playlist.m3u8?global=1"
+    },
+    "broadcastRegionPolicy": 0,
+    "status": {}
+  }
+]

@@ -1,0 +1,117 @@
+{
+  "id": "526-1",
+  "genre": {
+    "id": "variety",
+    "name": "バラエティ",
+    "subGenres": [
+      {
+        "id": "variety_18",
+        "name": "アーティスト"
+      }
+    ]
+  },
+  "title": "乃木坂46時間TV アベマ独占放送「はなれてたって、ぼくらはいっしょ!」",
+  "content": "「乃木坂46時間TV」アベマ独占放送が決定! 6月19日(金)19時〜6月21日(日)17時までの46時間生放送予定! \"\"はなれてたって、ぼくらはいっしょ!\"\"をテーマに乃木坂46全メンバーがノンストップで様々な企画に挑戦!",
+  "seasons": [
+    {
+      "id": "526-1_s1",
+      "sequence": 1,
+      "name": "DAY1"
+    },
+    {
+      "id": "526-1_s2",
+      "sequence": 2,
+      "name": "DAY2"
+    },
+    {
+      "id": "526-1_s3",
+      "sequence": 3,
+      "name": "DAY3"
+    },
+    {
+      "id": "526-1_s4",
+      "sequence": 4,
+      "name": "電視台"
+    },
+    {
+      "id": "526-1_s5",
+      "sequence": 5,
+      "name": "プレミアム"
+    },
+    {
+      "id": "526-1_s10",
+      "sequence": 10,
+      "name": "事前特番"
+    },
+    {
+      "id": "526-1_s99",
+      "sequence": 99,
+      "name": "特別映像"
+    }
+  ],
+  "orderedSeasons": [
+    {
+      "id": "526-1_s1",
+      "sequence": 1,
+      "name": "DAY1"
+    },
+    {
+      "id": "526-1_s2",
+      "sequence": 2,
+      "name": "DAY2"
+    },
+    {
+      "id": "526-1_s3",
+      "sequence": 3,
+      "name": "DAY3"
+    },
+    {
+      "id": "526-1_s4",
+      "sequence": 4,
+      "name": "電視台"
+    },
+    {
+      "id": "526-1_s5",
+      "sequence": 5,
+      "name": "プレミアム"
+    },
+    {
+      "id": "526-1_s10",
+      "sequence": 10,
+      "name": "事前特番"
+    },
+    {
+      "id": "526-1_s99",
+      "sequence": 99,
+      "name": "特別映像"
+    }
+  ],
+  "copyrights": [
+    "(C)AbemaTV, Inc."
+  ],
+  "label": {
+    "someFree": true,
+    "newest": true
+  },
+  "version": "1592984598562757516",
+  "imageUpdatedAt": 1589530469,
+  "programOrder": "seq",
+  "sharedLink": {
+    "twitter": "https://gxyt4.app.goo.gl/bkCvH",
+    "facebook": "https://gxyt4.app.goo.gl/f882p",
+    "google": "https://gxyt4.app.goo.gl/6e6U4",
+    "line": "https://gxyt4.app.goo.gl/xpWKg",
+    "copy": "https://gxyt4.app.goo.gl/5F5QL",
+    "instagram": "https://gxyt4.app.goo.gl/vq6zK"
+  },
+  "thumbComponent": {
+    "urlPrefix": "https://abm.hayabusa.media/series/526-1",
+    "filename": "thumb.png%3Fversion%3D1589530469",
+    "extension": "png"
+  },
+  "thumbPortraitComponent": {
+    "urlPrefix": "https://abm.hayabusa.media/series/526-1",
+    "filename": "portrait.png%3Fversion%3D1589530469",
+    "extension": "png"
+  }
+}

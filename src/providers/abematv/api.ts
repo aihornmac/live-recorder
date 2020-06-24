@@ -129,6 +129,118 @@ export function generateApplicationKeySecret(deviceId: string) {
   }
 }
 
+export async function getChannelList(options?: {
+  readonly division?: string
+}) {
+  const url = `${API_PREFIX}/channels`
+  const res = await get<{
+    channels: Array<{
+      id: string
+      name: string
+      playback: {
+        hls: string
+        dash: string
+        dashIPTV: string
+        hlsPreview: string
+        hlsLowLatency?: string
+        yospace?: {
+          hlsFPS: string
+          hlsPlayReady: string
+        }
+      }
+      broadcastRegionPolicy: number
+      status: {
+        drm?: boolean
+      }
+    }>
+  }>(url, {
+    responseType: 'json',
+    params: options,
+  })
+  return res.data.channels
+}
+
+export async function getVideoProgramInfo(userToken: string, programId: string) {
+  const url = `${API_PREFIX}/video/programs/${programId}`
+  const res = await get<{
+    id: string
+    playback: {
+      hls: string
+      dash: string
+      hlsPreview: string
+      dashIPTV: string
+    }
+    episode: {
+      number: number
+      title: string
+      conotent: string
+    }
+  }>(url, {
+    responseType: 'json',
+    headers: {
+      Authorization: `Bearer ${userToken}`
+    },
+  })
+  return res.data
+}
+
+export async function getVideoSeriesInfo(userToken: string, seriesId: string) {
+  const url = `${API_PREFIX}/video/series/${seriesId}`
+  const res = await get<{
+    id: string
+    title: string
+    content: string
+    orderedSeasons: Array<{
+      id: string
+      sequence: number
+      name: string
+    }>
+    version: string
+  }>(url, {
+    responseType: 'json',
+    headers: {
+      Authorization: `Bearer ${userToken}`
+    },
+  })
+  return res.data
+}
+
+export async function getVideoSeriesProgramsInfo(
+  userToken: string,
+  seriesId: string,
+  seriesVersion: string,
+  seasonId?: string,
+  options?: {
+    readonly offset?: number
+    readonly order?: 'seq'
+    readonly limit?: number
+  }
+) {
+  const url = `${API_PREFIX}/video/series/${seriesId}/programs`
+  const res = await get<{
+    programs: Array<{
+      id: string
+      episode: {
+        number: number
+        title: string
+        conotent: string
+      }
+    }>
+    version: string
+  }>(url, {
+    responseType: 'json',
+    params: {
+      ...options,
+      seasonId,
+      seriesVersion,
+    },
+    headers: {
+      Authorization: `Bearer ${userToken}`
+    },
+  })
+  return res.data
+}
+
 export async function getSlotInfo(userToken: string, slotId: string) {
   const url = `${API_PREFIX}/media/slots/${slotId}`
   const res = await get<{
@@ -163,17 +275,20 @@ export async function getSlotVodPlaylist(slotId: string) {
   }
 }
 
-export async function getSlotChasePlaylist(slotId: string, mediaToken: string) {
-  const url = `${STREAM_DOMAIN_DS}/chase/slot/${slotId}/playlist.m3u8`
+export function getSlotChaseStreamListUrl(slotId: string) {
+  return `${STREAM_DOMAIN_DS}/chase/slot/${slotId}/playlist.m3u8`
+}
+
+export function getSlotVodStreamListUrl(slotId: string) {
+  return `${STREAM_DOMAIN_DS}/slot/${slotId}/playlist.m3u8`
+}
+
+export async function getAnyPlaylist(url: string, mediaToken?: string) {
   const res = await get<string>(url, {
     responseType: 'text',
-    params: { t: mediaToken },
+    params: !mediaToken ? undefined : { t: mediaToken },
   })
-  return {
-    domain: STREAM_DOMAIN_DS,
-    url,
-    content: res.data,
-  }
+  return res.data
 }
 
 function sha256(key: crypto.BinaryLike | crypto.KeyObject, data: crypto.BinaryLike) {

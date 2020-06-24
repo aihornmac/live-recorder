@@ -21,7 +21,7 @@ export async function later(ms: number) {
       }
     }
   } else {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise<void>(resolve => setTimeout(resolve, ms))
   }
 }
 
@@ -106,4 +106,9 @@ export function dashToCamel(str: string) {
     s += a[0].toLocaleUpperCase() + a.slice(1)
   }
   return s
+}
+
+export function once<T>(fn: () => T): () => T {
+  let box: { readonly value: T } | undefined
+  return () => box ? box.value : (box = { value: fn() }).value
 }

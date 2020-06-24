@@ -47,6 +47,13 @@
   dependencies:
     chalk "*"
 
+"@types/cli-progress@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.npm.taobao.org/@types/cli-progress/download/@types/cli-progress-3.7.0.tgz#2c77da02e861699f83cce1f26b4da6cb0e438f04"
+  integrity sha1-LHfaAuhhaZ+DzOHya02myw5DjwQ=
+  dependencies:
+    "@types/node" "*"
+
 "@types/color-name@^1.1.1":
   version "1.1.1"
   resolved "https://registry.npm.taobao.org/@types/color-name/download/@types/color-name-1.1.1.tgz?cache=0&sync_timestamp=1588199606687&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fcolor-name%2Fdownload%2F%40types%2Fcolor-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
@@ -910,6 +917,14 @@ cli-cursor@^3.1.0:
   dependencies:
     restore-cursor "^3.1.0"
 
+cli-progress@^3.8.2:
+  version "3.8.2"
+  resolved "https://registry.npm.taobao.org/cli-progress/download/cli-progress-3.8.2.tgz?cache=0&sync_timestamp=1588411062345&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fcli-progress%2Fdownload%2Fcli-progress-3.8.2.tgz#abaf1fc6d6401351f16f068117a410554a0eb8c7"
+  integrity sha1-q68fxtZAE1HxbwaBF6QQVUoOuMc=
+  dependencies:
+    colors "^1.1.2"
+    string-width "^4.2.0"
+
 cli-width@^2.0.0:
   version "2.2.1"
   resolved "https://registry.npm.taobao.org/cli-width/download/cli-width-2.2.1.tgz#b0433d0b4e9c847ef18868a4ef16fd5fc8271c48"
@@ -964,6 +979,11 @@ color-name@~1.1.4:
   version "1.1.4"
   resolved "https://registry.npm.taobao.org/color-name/download/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha1-wqCah6y95pVD3m9j+jmVyCbFNqI=
+
+colors@^1.1.2:
+  version "1.4.0"
+  resolved "https://registry.npm.taobao.org/colors/download/colors-1.4.0.tgz#c50491479d4c1bdaed2c9ced32cf7c7dc2360f78"
+  integrity sha1-xQSRR51MG9rtLJztMs98fcI2D3g=
 
 commander@^2.20.0, commander@^2.5.0:
   version "2.20.3"

@@ -8,22 +8,21 @@ import { call } from '../../utils/js'
 
 const MATCH_ABEMATV_URL = (
   `^https://abema.tv/(?:${[
-    `now-on-air/(?<onair>[^\?]+)`,
-    `video/episode/(?<episode>[^\?]+)`,
-    `channels/.+?/slots/(?<slot>[^\?]+)`,
+    `now-on-air/(?<onair>[^?]+)`,
+    `video/title/(?<series>[^?]+)`,
+    `video/episode/(?<episode>[^?]+)`,
+    `channels/.+?/slots/(?<slot>[^?]+)`,
   ].join('|')})`
 )
 
-export interface ParsedAbematvInfo {
+export type ParsedAbematvInfo = {
+  type: 'onair' | 'episode' | 'slot'
   id: string
-  type: AbematvSourceType
+} | {
+  type: 'series'
+  id: string
+  seasonId?: string
 }
-
-export type AbematvSourceType = (
-  | 'onair'
-  | 'episode'
-  | 'slot'
-)
 
 export function parseUrl(url: URL) {
   const match = url.toString().match(MATCH_ABEMATV_URL)
@@ -35,8 +34,12 @@ export function parseUrl(url: URL) {
     if (typeof groups.onair === 'string')  {
       return { type: 'onair', id: groups.onair }
     }
-    if (typeof groups.eposide === 'string')  {
-      return { type: 'episode', id: groups.eposide }
+    if (typeof groups.series === 'string')  {
+      const seasonId = url.searchParams.get('s') || undefined
+      return { type: 'series', id: groups.series, seasonId }
+    }
+    if (typeof groups.episode === 'string')  {
+      return { type: 'episode', id: groups.episode }
     }
     if (typeof groups.slot === 'string')  {
       return { type: 'slot', id: groups.slot }

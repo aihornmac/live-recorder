@@ -3,18 +3,41 @@ import { parseDate } from 'chrono-node'
 import { formatDistance } from 'date-fns'
 import { dispatch } from './providers/dispatch'
 import { isErrorPayload, fail } from './utils/error'
-import chalk = require('chalk')
+import * as chalk from 'chalk'
 import { later } from './utils/js'
+import { version } from './env'
 
 export async function execute() {
-  const inputUrl = yargs.help(false).parse()._[0] || ''
+  const initialArgvDef = (
+    yargs
+    .parserConfiguration({ 'boolean-negation': false })
+    .version(version)
+    .alias('v', 'version')
+    .alias('h', 'help')
+  )
+
+  const initialArgv = (
+    initialArgvDef
+    .help(false)
+    .option('help', {
+      type: 'boolean',
+      nargs: 0,
+      demandOption: false,
+    })
+    .parse()
+  )
+
+  const inputUrl = initialArgv._[0] || ''
+
+  if (!inputUrl && initialArgv.help) {
+    initialArgvDef.help().parse()
+  }
 
   try {
     const provider = dispatch(inputUrl)(
-      yargs
+      initialArgvDef
+      .help()
       .strict()
-      .parserConfiguration({ 'boolean-negation': false })
-      .version(false)
       .option('outputPath', {
         type: 'string',
         nargs: 1,

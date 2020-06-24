@@ -15,9 +15,7 @@ export interface ParsedShowroomInfo {
   name: string
 }
 
-export function parseUrl(url: string) {
-  const op = new URL(url)
-
+export function parseUrl(op: URL) {
   if (op.hostname !== 'showroom-live.com' && op.hostname !== 'www.showroom-live.com') {
     return failProviderMismatch('showroom')
   }

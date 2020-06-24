@@ -1,14 +1,18 @@
 import * as path from 'path'
+import { DefinePlugin } from 'webpack'
 import type { Configuration } from 'webpack'
 import * as ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import * as Visualizer from 'webpack-visualizer-plugin'
 
 module.exports = getWebpackConfiguration()
 
 function getWebpackConfiguration(): Configuration {
   const projectPath = path.join(__dirname, '..')
+  const packageJsonPath = path.join(projectPath, 'package.json')
   const srcPath = path.join(projectPath, 'src')
   const tmpPath = path.join(projectPath, 'tmp')
   const tsConfigPath = path.join(srcPath, 'tsconfig.build.json')
+  const outputPath = path.join(tmpPath, 'lib')
 
   return {
     target: 'node',
@@ -18,7 +22,7 @@ function getWebpackConfiguration(): Configuration {
     entry: path.join(srcPath, 'entry.ts'),
 
     output: {
-      path: path.join(tmpPath, 'lib'),
+      path: outputPath,
       filename: 'entry.js',
       libraryTarget: 'umd',
     },
@@ -52,6 +56,14 @@ function getWebpackConfiguration(): Configuration {
         silent: true,
         tsconfig: tsConfigPath,
       }),
+      ...(!process.env.ANALYZE ? [] : [
+        new Visualizer({
+          filename: path.relative(outputPath, path.join(projectPath, 'stats.html')),
+        }),
+      ]),
+      new DefinePlugin({
+        __VERSION__: JSON.stringify(require(packageJsonPath).version)
+      })
     ],
   }
 }

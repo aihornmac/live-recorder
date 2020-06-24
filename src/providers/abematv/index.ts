@@ -25,7 +25,7 @@ export interface Argv {
   token?: string
 }
 
-export function match(url: string) {
+export function match(url: URL) {
   const info = parseUrl(url)
   if (info.kind === 'error') return info
 

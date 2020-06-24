@@ -3,3 +3,4 @@ node_modules
 /tmp
 /lib
 /tools/spike.ts
+/stats.html

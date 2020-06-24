@@ -1,3 +1,4 @@
+import { URL } from 'url'
 import {
   failProviderMismatch,
   failProviderInvalid,
@@ -24,8 +25,8 @@ export type AbematvSourceType = (
   | 'slot'
 )
 
-export function parseUrl(url: string) {
-  const match = url.match(MATCH_ABEMATV_URL)
+export function parseUrl(url: URL) {
+  const match = url.toString().match(MATCH_ABEMATV_URL)
   if (!match) return failProviderMismatch('abematv')
 
   const groups = match.groups || {}

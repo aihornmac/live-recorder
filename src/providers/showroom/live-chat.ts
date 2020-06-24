@@ -1,6 +1,6 @@
 import * as WebSocket from 'ws'
 import { EventEmitter } from 'events'
-import chalk = require('chalk')
+import * as chalk from 'chalk'
 import { AutoReconnectWebSocket } from '../../utils/websocket'
 import { ExternalPromise, createExternalPromise } from '../../utils/js'
 
@@ -91,10 +91,10 @@ export class ShowroomLiveChat {
       if (this._pingTimer) {
         clearInterval(this._pingTimer)
       }
-      const ws = this._ws.native
-      if (ws) {
-        ws.send('QUIT')
-      }
+      const ws = this._ws
+      const { native } = ws
+      if (native) native.send('QUIT')
+      ws.stop()
     } finally {
       this._exaustPromise.resolve()
     }
@@ -117,19 +117,20 @@ export class ShowroomLiveChat {
 
 export type Payload = (
   | CommentPayload
+  | GiftPayload
   | QuitPayload
 )
 
 export interface CommentPayload {
   t: '1'
-  ac: string // account
+  ac: string // account name
   cm: string // comment
   created_at: number // timestamp in second
 }
 
 export interface GiftPayload {
   t: '2'
-  ac: string // account
+  ac: string // account name
   g: number // gift id
   n: number // gift quantity
   created_at: number // timestamp in second

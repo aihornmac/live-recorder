@@ -1,5 +1,6 @@
 import * as path from 'path'
 import * as fs from 'fs'
+import { URL } from 'url'
 import { format } from 'date-fns'
 import * as chalk from 'chalk'
 import * as filenamify from 'filenamify'
@@ -9,7 +10,7 @@ import { HLSProject } from '../common/project'
 import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
 import { fail } from '../../utils/error'
 import { ShowroomLiveChat } from './live-chat'
-import { ensure } from '../../utils/flow-control'
+import { ensure, niceToHave } from '../../utils/flow-control'
 import { later } from '../../utils/js'
 import * as yargs from 'yargs'
 
@@ -17,7 +18,7 @@ export interface Argv {
   type?: string
 }
 
-export function match(url: string) {
+export function match(url: URL) {
   const info = parseUrl(url)
   if (info.kind === 'error') return info
 
@@ -108,17 +109,26 @@ export function match(url: string) {
           const projectPath = getProjectPath(roomInfo)
           await fs.promises.mkdir(projectPath, { recursive: true })
           const logPath = path.join(projectPath, 'logs.log')
-          const writeStream = fs.createWriteStream(logPath, { flags: 'a+' })
-          // loop in case of broken stream
-          while (true) {
-            console.log(`connecting to ws://${host}:${port} with key ${key}`)
-            const livechat = new ShowroomLiveChat(host, port, key)
-            livechat.on('event', payload => {
-              writeStream.write(JSON.stringify(payload))
-              writeStream.write('\n')
+          const commentsPath = path.join(projectPath, 'comments.txt')
+          const logStream = fs.createWriteStream(logPath, { flags: 'a+' })
+          const commentsStream = fs.createWriteStream(commentsPath, { flags: 'a+' })
+          console.log(`connecting to ws://${host}:${port} with key ${key}`)
+          const livechat = new ShowroomLiveChat(host, port, key)
+          livechat.on('event', payload => {
+            niceToHave(() => {
+              logStream.write(JSON.stringify(payload))
+              logStream.write('\n')
             })
-            await livechat.exaust()
-          }
+            niceToHave(() => {
+              if (payload.t === '1') {
+                const timeText = format(payload.created_at * 1000, 'HH:mm:ss')
+                const msg = `${timeText}   ${payload.ac}\n${payload.cm}\n`
+                commentsStream.write(msg)
+                commentsStream.write('\n')
+              }
+            })
+          })
+          await livechat.exaust()
         }
       }
     }

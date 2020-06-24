@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.0.16] - 2020-06-22
+## [0.0.17] - 2020-06-24
+### Added
+- add supports for more AbemaTV stream type: `onair` `serires` `season` `episode`
+- AbemaTV cli now display progress bar while recording hls stream
+
+## [0.0.16] - 2020-06-24
 ### Fixed
 - showroom livechat recording now exists when live ends
 - cli `--help` `-h` now prints help even without url input
@@ -8,7 +13,7 @@
 ### Added
 - cli `--version` `-v` now prints tool version
 
-## [0.0.15] - 2020-06-22
+## [0.0.15] - 2020-06-23
 ### Fixed
 - start time is awaited incorrectly
 

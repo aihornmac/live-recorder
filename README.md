@@ -12,7 +12,7 @@ Live Recorder is a cli tool to record live stream
 
 ## Getting Started
 
-Start recording with dfault configurations:
+Start recording with default configurations:
 
     $ live-recorder https://showroom-live.com/nekojita
 

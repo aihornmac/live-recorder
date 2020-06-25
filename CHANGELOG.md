@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.19] - 2020-06-25
+### Added
+- [AbemaTV] add cli option `content`, providing more output types, including `video`, `chunks`, `m3u8`
+
 ## [0.0.18] - 2020-06-25
 ### Added
 - cope with SHOWROOM live interruption

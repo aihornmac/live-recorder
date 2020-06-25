@@ -69,7 +69,7 @@ export function match(url: URL) {
           type: 'string',
           nargs: 1,
           demandOption: false,
-          describe: `Specify download content, e.g. 'video,m3u8', defaults to 'video'`,
+          describe: `Specify download content, e.g. 'video,chunks,m3u8', defaults to 'video'`,
         })
         .option('noHash', {
           type: 'boolean',
@@ -165,12 +165,18 @@ export function match(url: URL) {
   }
 }
 
+type ContentType = (
+  | 'video'
+  | 'chunks'
+  | 'm3u8'
+)
+
 type CommonExecutionOptions = {
   readonly concurrency: number
   readonly folderPath: string
   readonly token: string | undefined
   readonly ensureUnique: boolean
-  readonly contents: ReadonlySet<'video' | 'm3u8'>
+  readonly contents: ReadonlySet<ContentType>
 }
 
 async function executeEpisode(options: CommonExecutionOptions & {
@@ -381,12 +387,14 @@ async function executeSlot(options: CommonExecutionOptions & {
   })
 }
 
+type SequencedM3UAction = M3UAction & { mediaSequence: number }
+
 function loopPlayList(options: {
   readonly url: string
 }) {
   const { url } = options
 
-  const m3uActions = new PipeStream<M3UAction & { mediaSequence: number }>()
+  const m3uActions = new PipeStream<SequencedM3UAction>()
 
   let destroyed = false
 
@@ -536,10 +544,10 @@ async function executeHls(options: {
   readonly url: URL,
   readonly filePath: string
   readonly concurrency: number
-  readonly actions: AsyncIterable<M3UAction> | Iterable<M3UAction>,
+  readonly actions: AsyncIterable<SequencedM3UAction> | Iterable<SequencedM3UAction>,
   readonly usertoken: string
   readonly deviceId: string
-  readonly contents: ReadonlySet<'video' | 'm3u8'>
+  readonly contents: ReadonlySet<ContentType>
 }) {
   const { filePath, concurrency, actions, usertoken, deviceId, contents } = options
 
@@ -568,8 +576,13 @@ async function executeHls(options: {
     }
   })
 
+  const chunksPath = filePath + '.chunks'
   const videoWriteStream = contents.has('video') ? fs.createWriteStream(filePath) : undefined
   const m3u8WriteStream = contents.has('m3u8') ? fs.createWriteStream(filePath + '.m3u8.json') : undefined
+
+  if (contents.has('chunks')) {
+    await fs.promises.mkdir(chunksPath, { recursive: true })
+  }
 
   progressBar.start()
 
@@ -580,7 +593,7 @@ async function executeHls(options: {
       m3u8WriteStream.write(JSON.stringify(action))
       m3u8WriteStream.write('\n')
     }
-    if (videoWriteStream) {
+    if (videoWriteStream || contents.has('chunks')) {
       if (action.kind === 'extension') {
         if (action.key === 'KEY') {
           await concurrent.read()
@@ -617,7 +630,7 @@ async function executeHls(options: {
 
         progressBar.increaseTotal(action.duration)
 
-        const bufferPromise = concurrent.read().then(async () => {
+        let bufferPromise = concurrent.read().then(async () => {
           try {
             return await ensure(async () => {
               const res = await get<ArrayBuffer>(url, { responseType: 'arraybuffer' })
@@ -630,7 +643,13 @@ async function executeHls(options: {
         })
 
         writeSequence(async () => {
-          videoWriteStream.write(await bufferPromise)
+          const buffer = await bufferPromise
+          if (contents.has('chunks')) {
+            await fs.promises.writeFile(path.join(chunksPath, `${action.mediaSequence}.ts`), buffer)
+          }
+          if (videoWriteStream) {
+            videoWriteStream.write(buffer)
+          }
           progressBar.increaseValue(action.duration)
         })
       }
@@ -680,9 +699,9 @@ function formatConcurrent(x: unknown) {
 }
 
 function formatContent(x: string) {
-  const parts: Array<'video' | 'm3u8'> = []
+  const parts: Array<ContentType> = []
   for (const part of x.split(/[^a-zA-Z0-9-]/)) {
-    if (part === 'video' || part === 'm3u8') {
+    if (part === 'video' || part === 'm3u8' || part === 'chunks') {
       parts.push(part)
     }
   }

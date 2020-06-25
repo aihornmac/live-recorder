@@ -43,7 +43,7 @@ Record live chat:
 
 Specify recording content, since you may want to have more information other than video.
 
-    $ live-recorder --content video,m3u8 https://abema.tv/channels/special-plus/slots/CVRwLESD4GsvQw
+    $ live-recorder --content video,chunks,m3u8 https://abema.tv/channels/special-plus/slots/CVRwLESD4GsvQw
 
 Specify user token:
 

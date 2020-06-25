@@ -34,48 +34,55 @@ export async function execute() {
   }
 
   try {
-    const commander = dispatch.commands(firstInput)
-    if (commander) {
-      const list = process.argv.slice(2)
-      const firstInputIndex = list.findIndex(x => x === firstInput)
-      if (firstInputIndex >= 0) {
-        list.splice(0, firstInputIndex + 1)
+    // try to execute commander
+    {
+      const provider = firstInput.toLocaleLowerCase()
+      const commander = dispatch.commands(provider)
+      if (commander) {
+        const list = process.argv.slice(2)
+        const firstInputIndex = list.findIndex(x => x === firstInput)
+        if (firstInputIndex >= 0) {
+          list.splice(0, firstInputIndex + 1)
+        }
+        return await commander(list, initialArgvDef)
       }
-      return await commander(list, initialArgvDef)
     }
 
-    const provider = dispatch.record(firstInput)(
-      initialArgvDef
-      .help()
-      .strict()
-      .option('outputPath', {
-        type: 'string',
-        nargs: 1,
-        demandOption: false,
-        describe: 'Specify output project path',
-      })
-      .alias('o', 'outputPath')
-      .option('startAt', {
-        type: 'string',
-        nargs: 1,
-        demandOption: false,
-        describe: 'Specify record start time based on your local timezone',
-      })
-    )
-    const { startAt, outputPath } = provider.argv()
-    let recordStartAt = Date.now()
-    if (startAt) {
-      const startTime = parseDate(startAt)
-      if (!startTime) {
-        throw fail(chalk.redBright(`Unable to recognize start time ${startAt.toLocaleString()}`))
+    // execute recorder
+    {
+      const recorder = dispatch.record(firstInput)(
+        initialArgvDef
+        .help()
+        .strict()
+        .option('outputPath', {
+          type: 'string',
+          nargs: 1,
+          demandOption: false,
+          describe: 'Specify output project path',
+        })
+        .alias('o', 'outputPath')
+        .option('startAt', {
+          type: 'string',
+          nargs: 1,
+          demandOption: false,
+          describe: 'Specify record start time based on your local timezone',
+        })
+      )
+      const { startAt, outputPath } = recorder.argv()
+      let recordStartAt = Date.now()
+      if (startAt) {
+        const startTime = parseDate(startAt)
+        if (!startTime) {
+          throw fail(chalk.redBright(`Unable to recognize start time ${startAt.toLocaleString()}`))
+        }
+        const durationText = formatDistance(startTime, new Date(), { addSuffix: true })
+        console.log(chalk.greenBright(`Recording will start at ${startTime}  ( ${durationText} )`))
+        recordStartAt = +startTime
       }
-      const durationText = formatDistance(startTime, new Date(), { addSuffix: true })
-      console.log(chalk.greenBright(`Recording will start at ${startTime}  ( ${durationText} )`))
-      recordStartAt = +startTime
-    }
-    for await (const stage of provider.execute({ projectPath: outputPath })) {
-      if (stage === 'prepared') {
-        await later(Math.max(0, recordStartAt - Date.now()))
+      for await (const stage of recorder.execute({ projectPath: outputPath })) {
+        if (stage === 'prepared') {
+          await later(Math.max(0, recordStartAt - Date.now()))
+        }
       }
     }
   } catch (e) {

@@ -2,10 +2,19 @@ import * as chalk from 'chalk'
 import { URL } from 'url'
 
 import * as providers from './providers'
-import { entriesOf } from '../utils/js'
+import { entriesOf, isObjectHasKey } from '../utils/js'
 import { isErrorPayload, fail } from '../utils/error'
 
-export function dispatch(url: string) {
+export function commands(provider: string) {
+  if (isObjectHasKey(providers, provider)) {
+    const { commands } = providers[provider]
+    if (!commands) return async () => {}
+    return commands
+  }
+  return false
+}
+
+export function record(url: string) {
   if (!url){
     throw fail(chalk.redBright(`input url is empty`))
   }

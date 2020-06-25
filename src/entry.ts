@@ -1,7 +1,7 @@
 import * as yargs from 'yargs'
 import { parseDate } from 'chrono-node'
 import { formatDistance } from 'date-fns'
-import { dispatch } from './providers/dispatch'
+import * as dispatch from './providers/dispatch'
 import { isErrorPayload, fail } from './utils/error'
 import * as chalk from 'chalk'
 import { later } from './utils/js'
@@ -27,14 +27,24 @@ export async function execute() {
     .parse()
   )
 
-  const inputUrl = initialArgv._[0] || ''
+  const firstInput = initialArgv._[0] || ''
 
-  if (!inputUrl && initialArgv.help) {
+  if (!firstInput && initialArgv.help) {
     initialArgvDef.help().parse()
   }
 
   try {
-    const provider = dispatch(inputUrl)(
+    const commander = dispatch.commands(firstInput)
+    if (commander) {
+      const list = process.argv.slice(2)
+      const firstInputIndex = list.findIndex(x => x === firstInput)
+      if (firstInputIndex >= 0) {
+        list.splice(0, firstInputIndex + 1)
+      }
+      return await commander(list, initialArgvDef)
+    }
+
+    const provider = dispatch.record(firstInput)(
       initialArgvDef
       .help()
       .strict()

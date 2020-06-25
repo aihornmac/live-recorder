@@ -11,7 +11,7 @@ import * as filenamify from 'filenamify'
 import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
 import { M3UReader, parseProperties, M3UAction } from '../../utils/m3u'
 import { readlineFromBuffer } from '../../utils/readline'
-import { call, createSequancePromise, later } from '../../utils/js'
+import { call, createSequancePromise, later, once } from '../../utils/js'
 import {
   createUser,
   parseTicket,
@@ -36,9 +36,42 @@ import { parseUrl } from './dispatch'
 import { fail } from '../../utils/error'
 import { ProgressBar } from '../../utils/progress-bar'
 import { formatDurationInSeconds, stringifyDuration } from '../common/helpers'
+import { ConfigOperator } from '../common/config'
 import { waitForWriteStreamFinish } from '../../utils/node-stream'
 
+const PROVIDER = 'abematv'
+
 const DEFAULT_CONCURRENT = 8
+
+export interface Config {
+  readonly token?: string
+}
+
+const getConfigOperator = once(() => new ConfigOperator<Config>(PROVIDER))
+
+export async function commands(list: readonly string[], yargs: yargs.Argv) {
+  const command = list[0] || ''
+  const rest = list.slice(1)
+  if (command === 'login') {
+    const argv = (
+      yargs
+        .option('token', {
+          type: 'string',
+          nargs: 1,
+          demandOption: true,
+          describe: 'Specify download token',
+        })
+        .parse(rest)
+    )
+    const { token } = argv
+    const op = getConfigOperator()
+    await op.set({
+      ...await op.get(),
+      token,
+    })
+    console.log(`token is set to ${token}`)
+  }
+}
 
 export function match(url: URL) {
   const info = parseUrl(url)
@@ -57,7 +90,7 @@ export function match(url: URL) {
           type: 'string',
           nargs: 1,
           demandOption: false,
-          describe: 'Specify download token, defaults to anonymous user',
+          describe: 'Specify download token, defaults to token in configuration, or anonymous user if unset',
         })
         .option('eventType', {
           type: 'string',
@@ -87,10 +120,19 @@ export function match(url: URL) {
       async * execute(options: CommonCreateOptions) {
         console.log(`downloading ${info.data.type} ${info.data.id}`)
 
+        let usertoken: string | undefined
+
         if (argv.token) {
+          usertoken = argv.token
           console.log(`using token ${argv.token}`)
         } else {
-          console.log(`using temporary token`)
+          const presetToken = (await getConfigOperator().get())?.token
+          if (presetToken) {
+            usertoken = presetToken
+            console.log(`using token in configuration ${presetToken}`)
+          } else {
+            console.log(`using temporary token`)
+          }
         }
 
         const contents = formatContent(argv.content || '')
@@ -113,7 +155,7 @@ export function match(url: URL) {
               type: eventType === 'chase' ? 'chase' : eventType === 'vod' ? 'vod' : undefined,
               concurrency,
               folderPath,
-              token: argv.token,
+              token: usertoken,
               slotId: data.id,
               ensureUnique: !argv.noHash,
               contents,
@@ -124,7 +166,7 @@ export function match(url: URL) {
             return () => executeOnair({
               concurrency,
               folderPath,
-              token: argv.token,
+              token: usertoken,
               channelId: data.id,
               ensureUnique: !argv.noHash,
               contents,
@@ -135,7 +177,7 @@ export function match(url: URL) {
             return () => executeEpisode({
               concurrency,
               folderPath,
-              token: argv.token,
+              token: usertoken,
               episodeId: data.id,
               ensureUnique: !argv.noHash,
               contents,
@@ -146,7 +188,7 @@ export function match(url: URL) {
             return () => executeSeries({
               concurrency,
               folderPath,
-              token: argv.token,
+              token: usertoken,
               seriesId: data.id,
               seasonId: data.seasonId,
               ensureUnique: !argv.noHash,

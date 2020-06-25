@@ -14,6 +14,8 @@ import { ensure, niceToHave } from '../../utils/flow-control'
 import { later } from '../../utils/js'
 import * as yargs from 'yargs'
 
+export const commands = undefined
+
 export function match(url: URL) {
   const info = parseUrl(url)
   if (info.kind === 'error') return info

@@ -36,6 +36,7 @@ import { parseUrl } from './dispatch'
 import { fail } from '../../utils/error'
 import { ProgressBar } from '../../utils/progress-bar'
 import { formatDurationInSeconds, stringifyDuration } from '../common/helpers'
+import { waitForWriteStreamFinish } from '../../utils/node-stream'
 
 const DEFAULT_CONCURRENT = 8
 
@@ -64,6 +65,12 @@ export function match(url: URL) {
           demandOption: false,
           describe: `Specify event type, could be 'vod' or 'chase', defaults to vod if ended, chase if not`,
         })
+        .option('content', {
+          type: 'string',
+          nargs: 1,
+          demandOption: false,
+          describe: `Specify download content, e.g. 'video,m3u8', defaults to 'video'`,
+        })
         .option('noHash', {
           type: 'boolean',
           nargs: 0,
@@ -79,11 +86,17 @@ export function match(url: URL) {
       },
       async * execute(options: CommonCreateOptions) {
         console.log(`downloading ${info.data.type} ${info.data.id}`)
+
         if (argv.token) {
           console.log(`using token ${argv.token}`)
         } else {
           console.log(`using temporary token`)
         }
+
+        const contents = formatContent(argv.content || '')
+        if (!contents.size) contents.add('video')
+
+        console.log(`recording ${Array.from(contents).join(',')}`)
 
         const concurrency = formatConcurrent(argv.concurrent)
 
@@ -103,6 +116,7 @@ export function match(url: URL) {
               token: argv.token,
               slotId: data.id,
               ensureUnique: !argv.noHash,
+              contents,
             })
           }
 
@@ -113,6 +127,7 @@ export function match(url: URL) {
               token: argv.token,
               channelId: data.id,
               ensureUnique: !argv.noHash,
+              contents,
             })
           }
 
@@ -123,6 +138,7 @@ export function match(url: URL) {
               token: argv.token,
               episodeId: data.id,
               ensureUnique: !argv.noHash,
+              contents,
             })
           }
 
@@ -134,6 +150,7 @@ export function match(url: URL) {
               seriesId: data.id,
               seasonId: data.seasonId,
               ensureUnique: !argv.noHash,
+              contents,
             })
           }
 
@@ -148,14 +165,18 @@ export function match(url: URL) {
   }
 }
 
-async function executeEpisode(options: {
+type CommonExecutionOptions = {
   readonly concurrency: number
   readonly folderPath: string
   readonly token: string | undefined
-  readonly episodeId: string
   readonly ensureUnique: boolean
+  readonly contents: ReadonlySet<'video' | 'm3u8'>
+}
+
+async function executeEpisode(options: CommonExecutionOptions & {
+  readonly episodeId: string
 }) {
-  const { folderPath, concurrency, token, episodeId, ensureUnique } = options
+  const { folderPath, concurrency, token, episodeId, ensureUnique, contents } = options
 
   const { usertoken, deviceId } = await getUserData(token)
 
@@ -181,7 +202,6 @@ async function executeEpisode(options: {
   if (!playListUrl) return
 
   const { actions } = loopPlayList({
-    shouldLoop: false,
     url: playListUrl.toString(),
   })
 
@@ -192,17 +212,14 @@ async function executeEpisode(options: {
     actions,
     usertoken,
     deviceId,
+    contents,
   })
 }
 
-async function executeOnair(options: {
-  readonly concurrency: number
-  readonly folderPath: string
-  readonly token: string | undefined
+async function executeOnair(options: CommonExecutionOptions & {
   readonly channelId: string
-  readonly ensureUnique: boolean
 }) {
-  const { folderPath, concurrency, token, channelId, ensureUnique } = options
+  const { folderPath, concurrency, token, channelId, ensureUnique, contents } = options
 
   const { usertoken, deviceId } = await getUserData(token)
 
@@ -234,7 +251,6 @@ async function executeOnair(options: {
   if (!playListUrl) return
 
   const { actions } = loopPlayList({
-    shouldLoop: true,
     url: playListUrl.toString(),
   })
 
@@ -245,18 +261,15 @@ async function executeOnair(options: {
     actions,
     usertoken,
     deviceId,
+    contents,
   })
 }
 
-async function executeSeries(options: {
-  readonly concurrency: number
-  readonly folderPath: string
-  readonly token: string | undefined
+async function executeSeries(options: CommonExecutionOptions & {
   readonly seriesId: string
   readonly seasonId: string | undefined
-  readonly ensureUnique: boolean
 }) {
-  const { folderPath, concurrency, token, seriesId, seasonId, ensureUnique } = options
+  const { folderPath, token, seriesId, seasonId, ensureUnique } = options
 
   const { usertoken } = await getUserData(token)
 
@@ -293,7 +306,7 @@ async function executeSeries(options: {
     for (const item of list) {
       console.log(chalk.greenBright(`${season.name}    ${item.episode.title}`))
       await executeEpisode({
-        concurrency,
+        ...options,
         folderPath: seasonPath,
         token: usertoken,
         episodeId: item.id,
@@ -303,15 +316,11 @@ async function executeSeries(options: {
   }
 }
 
-async function executeSlot(options: {
-  readonly type?: 'chase' | 'vod'
-  readonly concurrency: number
-  readonly folderPath: string
-  readonly token: string | undefined
+async function executeSlot(options: CommonExecutionOptions & {
+  readonly type: 'chase' | 'vod' | undefined
   readonly slotId: string
-  readonly ensureUnique: boolean
 }) {
-  const { type: inputType, folderPath, concurrency, token, slotId, ensureUnique } = options
+  const { type: inputType, folderPath, concurrency, token, slotId, ensureUnique, contents } = options
 
   const { usertoken, deviceId } = await getUserData(token)
 
@@ -358,7 +367,6 @@ async function executeSlot(options: {
   if (!playListUrl) return
 
   const { actions } = loopPlayList({
-    shouldLoop: type === 'chase',
     url: playListUrl.toString(),
   })
 
@@ -369,14 +377,14 @@ async function executeSlot(options: {
     actions,
     usertoken,
     deviceId,
+    contents,
   })
 }
 
 function loopPlayList(options: {
   readonly url: string
-  readonly shouldLoop: boolean
 }) {
-  const { url, shouldLoop } = options
+  const { url } = options
 
   const m3uActions = new PipeStream<M3UAction & { mediaSequence: number }>()
 
@@ -410,8 +418,8 @@ function loopPlayList(options: {
             }
           }
           if (action.kind === 'track') {
-            if (mediaSequence > globalMediaSequence) {
-              globalMediaSequence = mediaSequence
+            if (mediaSequence >= globalMediaSequence) {
+              globalMediaSequence = mediaSequence + 1
               m3uActions.write({
                 ...action,
                 mediaSequence,
@@ -419,7 +427,7 @@ function loopPlayList(options: {
             }
             mediaSequence++
           } else {
-            if (mediaSequence > globalMediaSequence) {
+            if (mediaSequence >= globalMediaSequence) {
               m3uActions.write({
                 ...action,
                 mediaSequence,
@@ -428,8 +436,6 @@ function loopPlayList(options: {
           }
         }
       }
-
-      if (!shouldLoop) break
 
       // since each chunk is nearly 4s or 5s, set it at 5s
       await later(5000)
@@ -533,8 +539,9 @@ async function executeHls(options: {
   readonly actions: AsyncIterable<M3UAction> | Iterable<M3UAction>,
   readonly usertoken: string
   readonly deviceId: string
+  readonly contents: ReadonlySet<'video' | 'm3u8'>
 }) {
-  const { filePath, concurrency, actions, usertoken, deviceId } = options
+  const { filePath, concurrency, actions, usertoken, deviceId, contents } = options
 
   const domain = call(() => {
     const url = new URL(options.url.toString())
@@ -561,69 +568,92 @@ async function executeHls(options: {
     }
   })
 
+  const videoWriteStream = contents.has('video') ? fs.createWriteStream(filePath) : undefined
+  const m3u8WriteStream = contents.has('m3u8') ? fs.createWriteStream(filePath + '.m3u8.json') : undefined
+
   progressBar.start()
 
   const writeSequence = createSequancePromise()
 
-  const writeStream = fs.createWriteStream(filePath)
-
   for await (const action of actions) {
-    if (action.kind === 'extension') {
-      if (action.key === 'KEY') {
-        await concurrent.read()
-        // change key
-        const map = parseProperties(action.value)
-        const method = map.get('METHOD')
-        if (method === 'NONE') {
-          decoder = defaultDecoder
-        } else if (method === 'AES-128') {
-          const uri = map.get('URI')
-          if (!uri) throw new Error(`uri is empty`)
-          const ivInput = map.get('IV')
-          if (!ivInput) throw new Error(`iv is empty`)
-          const ticket = parseTicket(uri)
-          if (!ticket) throw new Error(`Failed to parse ticket`)
-          const ivString = parseIV(ivInput)
-          if (!ivString) throw new Error(`Failed to parse iv`)
-          const iv = Buffer.from(ivString, 'hex')
-          await ensure(async () => {
-            const mediaToken = await getMediaToken(usertoken)
-            const license = await getHLSLicenseFromTicket(mediaToken, ticket)
-            const encodedVideoKey = readEncodedVideoKey(license.k)
-            const videoKey = getVideoKeyFromHLSLicense(deviceId, license.cid, encodedVideoKey)
-            decoder = buffer => decodeAES(buffer, videoKey, iv)
-          })
-        } else {
-          throw new Error(`Unknown method ${method}, ${Array.from(map.entries()).map(([key, value]) => `${key}=${value}`).join(',')}`)
-        }
-        concurrent.write()
-      }
-    } else if (action.kind === 'track') {
-      const url = `${domain}${action.url}`
-      const currentDecoder = decoder
-
-      progressBar.increaseTotal(action.duration)
-
-      const bufferPromise = concurrent.read().then(async () => {
-        try {
-          return await ensure(async () => {
-            const res = await get<ArrayBuffer>(url, { responseType: 'arraybuffer' })
-            const buf = Buffer.from(res.data)
-            return currentDecoder(buf)
-          })
-        } finally {
+    if (m3u8WriteStream) {
+      m3u8WriteStream.write(JSON.stringify(action))
+      m3u8WriteStream.write('\n')
+    }
+    if (videoWriteStream) {
+      if (action.kind === 'extension') {
+        if (action.key === 'KEY') {
+          await concurrent.read()
+          // change key
+          const map = parseProperties(action.value)
+          const method = map.get('METHOD')
+          if (method === 'NONE') {
+            decoder = defaultDecoder
+          } else if (method === 'AES-128') {
+            const uri = map.get('URI')
+            if (!uri) throw new Error(`uri is empty`)
+            const ivInput = map.get('IV')
+            if (!ivInput) throw new Error(`iv is empty`)
+            const ticket = parseTicket(uri)
+            if (!ticket) throw new Error(`Failed to parse ticket`)
+            const ivString = parseIV(ivInput)
+            if (!ivString) throw new Error(`Failed to parse iv`)
+            const iv = Buffer.from(ivString, 'hex')
+            await ensure(async () => {
+              const mediaToken = await getMediaToken(usertoken)
+              const license = await getHLSLicenseFromTicket(mediaToken, ticket)
+              const encodedVideoKey = readEncodedVideoKey(license.k)
+              const videoKey = getVideoKeyFromHLSLicense(deviceId, license.cid, encodedVideoKey)
+              decoder = buffer => decodeAES(buffer, videoKey, iv)
+            })
+          } else {
+            throw new Error(`Unknown method ${method}, ${Array.from(map.entries()).map(([key, value]) => `${key}=${value}`).join(',')}`)
+          }
           concurrent.write()
         }
-      })
+      } else if (action.kind === 'track') {
+        const url = `${domain}${action.url}`
+        const currentDecoder = decoder
 
-      writeSequence(async () => {
-        writeStream.write(await bufferPromise)
+        progressBar.increaseTotal(action.duration)
+
+        const bufferPromise = concurrent.read().then(async () => {
+          try {
+            return await ensure(async () => {
+              const res = await get<ArrayBuffer>(url, { responseType: 'arraybuffer' })
+              const buf = Buffer.from(res.data)
+              return currentDecoder(buf)
+            })
+          } finally {
+            concurrent.write()
+          }
+        })
+
+        writeSequence(async () => {
+          videoWriteStream.write(await bufferPromise)
+          progressBar.increaseValue(action.duration)
+        })
+      }
+    } else {
+      if (action.kind === 'track') {
+        progressBar.increaseTotal(action.duration)
         progressBar.increaseValue(action.duration)
-      })
+      }
     }
   }
 
   await writeSequence(() => {})
+
+  await Promise.all([
+    videoWriteStream,
+    m3u8WriteStream,
+  ].map(writeStream =>
+    writeStream && call(() => {
+      const promise = waitForWriteStreamFinish(writeStream)
+      writeStream.end()
+      return promise
+    })
+  ))
 
   progressBar.stop()
 }
@@ -647,6 +677,16 @@ function formatConcurrent(x: unknown) {
   const value = Math.ceil(Number(x))
   if(Number.isFinite(value) && value > 0) return value
   return DEFAULT_CONCURRENT
+}
+
+function formatContent(x: string) {
+  const parts: Array<'video' | 'm3u8'> = []
+  for (const part of x.split(/[^a-zA-Z0-9-]/)) {
+    if (part === 'video' || part === 'm3u8') {
+      parts.push(part)
+    }
+  }
+  return new Set(parts)
 }
 
 function decodeAES(buffer: Buffer, videoKey: Buffer, iv: crypto.BinaryLike) {

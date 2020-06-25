@@ -112,3 +112,20 @@ export function once<T>(fn: () => T): () => T {
   let box: { readonly value: T } | undefined
   return () => box ? box.value : (box = { value: fn() }).value
 }
+
+export function matchAll(reg: RegExp, input: string) {
+  if (reg.lastIndex !== 0) {
+    throw new Error(`reg is not reset`)
+  }
+  const results: RegExpExecArray[] = []
+  try {
+    while (true) {
+      const ret = reg.exec(input)
+      if (!ret) break
+      results.push(ret)
+    }
+    return results
+  } finally {
+    reg.lastIndex = 0
+  }
+}

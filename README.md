@@ -35,16 +35,20 @@ More cli options can be found in [sections of corresponding  providers](#support
 
 ### SHOWROOM
 
-record live chat
+Record live chat:
 
     $ live-recorder --type livechat https://showroom-live.com/nekojita
 
 ### AbemaTV
 
-specify user token
+Specify recording content, since you may want to have more information other than video.
+
+    $ live-recorder --content video,m3u8 https://abema.tv/channels/special-plus/slots/CVRwLESD4GsvQw
+
+Specify user token:
 
     $ live-recorder --token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXYiOiJkZmE1ZWI1ZC0wMDM5LTQ1MzUtOTIwYi00N2RjMDVkODlkNWUiLCJleHAiOjIxNDc0ODM2NDcsImlzcyI6ImFiZW1hLmlvL3YxIiwic3ViIjoiNXZ2ekZDYVgzeGN3M3EifQ.woiwLthcwRCaLb0ppEbaqxuWq4PFMFs_3oUeM2lO40c https://abema.tv/channels/special-plus/slots/CVRwLESD4GsvQw
 
-disable hash in generated filename
+Disable hash in generated filename:
 
     $ live-recorder --no-hash https://abema.tv/channels/special-plus/slots/CVRwLESD4GsvQw

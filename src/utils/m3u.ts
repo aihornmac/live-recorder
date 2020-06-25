@@ -1,3 +1,5 @@
+import { matchAll } from './js'
+
 const propertyReg = /^"?([^"]+?)"?="?([^"]+?)"?$/
 const propertyRegGlobal = new RegExp(propertyReg, 'g')
 
@@ -102,23 +104,6 @@ export function parseProperties(input: string) {
     properties.set(key, value)
   }
   return properties
-}
-
-function matchAll(reg: RegExp, input: string) {
-  if (reg.lastIndex !== 0) {
-    throw new Error(`reg is not reset`)
-  }
-  const results: RegExpExecArray[] = []
-  try {
-    while (true) {
-      const ret = reg.exec(input)
-      if (!ret) break
-      results.push(ret)
-    }
-    return results
-  } finally {
-    reg.lastIndex = 0
-  }
 }
 
 export type M3UAction = (

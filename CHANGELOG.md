@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.20] - 2020-06-25
+### Added
+- add commands for providers, the canonical format is `live-recorder <provider> ...` (provider is case insensitive)
+- [AbemaTV] add command `login` with option `--token` to set token in configuration
+
 ## [0.0.19] - 2020-06-25
 ### Added
 - [AbemaTV] add cli option `content`, providing more output types, including `video`, `chunks`, `m3u8`

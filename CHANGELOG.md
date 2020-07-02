@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.21] - 2020-07-02
+### Added
+- [radiko] Basic support for radiko
+
 ## [0.0.20] - 2020-06-25
 ### Added
 - add commands for providers, the canonical format is `live-recorder <provider> ...` (provider is case insensitive)

@@ -1,4 +1,4 @@
-import { ObjectEntryOf, MaybePromise } from './types'
+import { ObjectEntryOf, MaybePromise, ObjectKeyOf } from './types'
 
 export function isObjectHasKey<M extends {}>(obj: M, key: string): key is string & keyof M {
   return Object.prototype.hasOwnProperty.call(obj, key)
@@ -45,6 +45,10 @@ export function cancellableLater(ms: number) {
     resolve(false)
   }
   return { cancel, promise }
+}
+
+export function keysOf<T extends {}>(x: T) {
+  return Object.keys(x) as Array<ObjectKeyOf<T>>
 }
 
 export function entriesOf<T>(x: T): Array<ObjectEntryOf<T>> {
@@ -97,6 +101,8 @@ export function createSequancePromise<T = void>() {
 
 export const noop = () => {}
 
+export const identity = <T>(x: T) => x
+
 export function dashToCamel(str: string) {
   const parts = str.split('-')
   const { length } = parts
@@ -128,4 +134,26 @@ export function matchAll(reg: RegExp, input: string) {
   } finally {
     reg.lastIndex = 0
   }
+}
+
+export function stripUndefined<T>(x: T, deep = false): T {
+  return stripValue(x, undefined, deep)
+}
+
+export function stripValue<T>(x: T, v: unknown, deep = false): T {
+  if (typeof x === 'object' && x) {
+    if (Array.isArray(x)) {
+      if (!deep) return x
+      return x.map((child: unknown) => stripValue(child, v, deep)) as unknown as T
+    } else {
+      const result = {} as T
+      for (const key of Object.keys(x) as Array<keyof typeof x>) {
+        const value = x[key]
+        if (value === v) continue
+        result[key] = deep ? stripValue(value, v, deep) : value
+      }
+      return result
+    }
+  }
+  return x
 }

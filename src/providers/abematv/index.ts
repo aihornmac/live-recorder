@@ -9,9 +9,8 @@ import * as chalk from 'chalk'
 import * as filenamify from 'filenamify'
 
 import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
-import { M3UReader, parseProperties, M3UAction } from '../../utils/m3u'
-import { readlineFromBuffer } from '../../utils/readline'
-import { call, createSequancePromise, later, once } from '../../utils/js'
+import { parseProperties } from '../../utils/m3u'
+import { call, createSequancePromise, once } from '../../utils/js'
 import {
   createUser,
   parseTicket,
@@ -38,6 +37,7 @@ import { ProgressBar } from '../../utils/progress-bar'
 import { formatDurationInSeconds, stringifyDuration } from '../common/helpers'
 import { ConfigOperator } from '../common/config'
 import { waitForWriteStreamFinish } from '../../utils/node-stream'
+import { loopPlayList, SequencedM3UAction, parseStreamList, parseBandwidth, parseResolution, pickStream, printStreamChoices } from '../common/hls'
 
 const PROVIDER = 'abematv'
 
@@ -242,7 +242,7 @@ async function executeEpisode(options: CommonExecutionOptions & {
 
   await fs.promises.mkdir(folderPath, { recursive: true })
 
-  const playListUrl = await parseStreamList({
+  const playListUrl = await getStream({
     url: streamListUrl,
     usertoken: undefined,
   })
@@ -251,6 +251,7 @@ async function executeEpisode(options: CommonExecutionOptions & {
 
   const { actions } = loopPlayList({
     url: playListUrl.toString(),
+    interval: 5000,
   })
 
   await executeHls({
@@ -291,7 +292,7 @@ async function executeOnair(options: CommonExecutionOptions & {
 
   await fs.promises.mkdir(folderPath, { recursive: true })
 
-  const playListUrl = await parseStreamList({
+  const playListUrl = await getStream({
     url: streamListUrl,
     usertoken: undefined,
   })
@@ -300,6 +301,7 @@ async function executeOnair(options: CommonExecutionOptions & {
 
   const { actions } = loopPlayList({
     url: playListUrl.toString(),
+    interval: 5000,
   })
 
   await executeHls({
@@ -407,7 +409,7 @@ async function executeSlot(options: CommonExecutionOptions & {
 
   console.log(`event mode: ${type}`)
 
-  const playListUrl = await parseStreamList({
+  const playListUrl = await getStream({
     url: getStreamListUrl(),
     usertoken,
   })
@@ -416,6 +418,7 @@ async function executeSlot(options: CommonExecutionOptions & {
 
   const { actions } = loopPlayList({
     url: playListUrl.toString(),
+    interval: 5000,
   })
 
   await executeHls({
@@ -429,153 +432,37 @@ async function executeSlot(options: CommonExecutionOptions & {
   })
 }
 
-type SequencedM3UAction = M3UAction & { mediaSequence: number }
-
-function loopPlayList(options: {
-  readonly url: string
-}) {
-  const { url } = options
-
-  const m3uActions = new PipeStream<SequencedM3UAction>()
-
-  let destroyed = false
-
-  // loop playlist
-  call(async () => {
-    const reader = new M3UReader()
-
-    let globalMediaSequence = 0
-
-    while (true) {
-      if (destroyed) return
-
-      const playlist = await ensure(async () => {
-        const res = await get<string>(url, { responseType: 'text' })
-        return res.data
-      })
-
-      let mediaSequence = 0
-      for await (const line of readlineFromBuffer(playlist)) {
-        const action = reader.push(line)
-        if (action) {
-          if (action.kind === 'extension') {
-            if (action.key == 'ENDLIST') {
-              m3uActions.end()
-              return
-            }
-            if (action.key === 'MEDIA-SEQUENCE') {
-              mediaSequence = +action.value
-            }
-          }
-          if (action.kind === 'track') {
-            if (mediaSequence >= globalMediaSequence) {
-              globalMediaSequence = mediaSequence + 1
-              m3uActions.write({
-                ...action,
-                mediaSequence,
-              })
-            }
-            mediaSequence++
-          } else {
-            if (mediaSequence >= globalMediaSequence) {
-              m3uActions.write({
-                ...action,
-                mediaSequence,
-              })
-            }
-          }
-        }
-      }
-
-      // since each chunk is nearly 4s or 5s, set it at 5s
-      await later(5000)
-    }
-  })
-
-  return {
-    actions: m3uActions,
-    dispose: () => { destroyed = true }
-  }
-}
-
-async function parseStreamList(options: {
+async function getStream(options: {
   readonly url: string
   readonly usertoken: string | undefined
 }) {
   const { url, usertoken } = options
   const content = await getAnyPlaylist(url, usertoken)
 
-  const choices: Array<{
-    url: string
-    bandwidth: number
-    resolution?: {
-      width: number
-      height: number
+  const streams = await parseStreamList({
+    content,
+    parser: {
+      BANDWIDTH: parseBandwidth,
+      RESOLUTION: parseResolution,
     }
-  }> = []
+  })
 
-  const reader = new M3UReader()
-
-  for await (const line of readlineFromBuffer(content)) {
-    reader.push(line)
-  }
-
-  for (const choice of reader.actions) {
-    if (choice.kind === 'stream') {
-      const map = parseProperties(choice.value)
-
-      const bandwidth = call(() => {
-        const str = map.get('BANDWIDTH')
-        const value = +String(str)
-        if (!(Number.isFinite(value) && value > 0)) {
-          throw fail(`Incorrect bandwidth ${str}`)
-        }
-        return value
-      })
-
-      const resolution = call(() => {
-        const str = map.get('RESOLUTION')
-        const match = str?.match(/^(?<width>[1-9][0-9]*?)x(?<height>[1-9][0-9]*?)$/)
-        if (!match) return
-        return {
-          width: +match.groups!.width,
-          height: +match.groups!.height,
-        }
-      })
-
-      choices.push({ bandwidth, resolution, url: choice.url })
-    }
-  }
-
-  if (!choices.length) {
+  if (!streams.length) {
     console.error(chalk.redBright(`No stream found`))
     return
   }
 
-  const pickedChoice = choices.slice().sort((a, b) => b.bandwidth - a.bandwidth)[0]
+  const pickedStream = pickStream(streams, 'best')!
 
   console.log()
 
-  console.log(`Found multiple streams:`)
+  printStreamChoices(streams, pickedStream)
 
-  for (let i = 0; i < choices.length; i++) {
-    const choice = choices[i]
-    const used = choice === pickedChoice
-    const msg = `[${i}] ${choice.resolution && `${choice.resolution.width}x${choice.resolution.height}`} ${!used ? '' : '[used]'}`
-    console.log(used ? chalk.white(msg) : chalk.gray(msg))
-  }
-
-  const playListUrl = call(() => {
-    const u = new URL(url)
-    const [uri, query] = pickedChoice.url.split('?')
-    u.pathname = path.dirname(u.pathname) + '/' + uri
-    u.search = query
-    return u
-  })
+  const playListUrl = new URL(pickedStream.url, url)
 
   console.log()
 
-  console.log(`using manifest: ${playListUrl.toString()}`)
+  console.log(`using manifest: ${playListUrl}`)
 
   console.log()
 

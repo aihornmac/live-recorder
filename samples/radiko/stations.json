@@ -1,0 +1,317 @@
+[
+  {
+    "id": "TBS",
+    "name": "TBSラジオ",
+    "ascii_name": "TBS RADIO",
+    "ruby": "てぃーびーえすらじお",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/TBS/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/TBS/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/TBS/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/TBS/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/TBS/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/TBS/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/TBS/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/TBS/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/TBS/20200331114320.jpg",
+    "href": "https://www.tbsradio.jp/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "QRR",
+    "name": "文化放送",
+    "ascii_name": "JOQR BUNKA HOSO",
+    "ruby": "ぶんかほうそう",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/QRR/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/QRR/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/QRR/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/QRR/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/QRR/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/QRR/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/QRR/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/QRR/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/QRR/20180412210942.png",
+    "href": "http://www.joqr.co.jp/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "LFR",
+    "name": "ニッポン放送",
+    "ascii_name": "JOLF NIPPON HOSO",
+    "ruby": "にっぽんほうそう",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/LFR/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/LFR/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/LFR/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/LFR/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/LFR/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/LFR/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/LFR/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/LFR/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/LFR/20200630091345.png",
+    "href": "http://www.1242.com/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "RN1",
+    "name": "ラジオNIKKEI第1",
+    "ascii_name": "RADIONIKKEI",
+    "ruby": "らじおにっけいだいいち",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/RN1/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/RN1/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/RN1/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/RN1/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/RN1/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/RN1/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/RN1/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/RN1/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/RN1/20120802154152.png",
+    "href": "http://www.radionikkei.jp/",
+    "tf_max_delay": 60
+  },
+  {
+    "id": "RN2",
+    "name": "ラジオNIKKEI第2",
+    "ascii_name": "RADIONIKKEI2",
+    "ruby": "らじおにっけいだいに",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/RN2/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/RN2/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/RN2/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/RN2/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/RN2/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/RN2/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/RN2/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/RN2/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/RN2/20190423111331.png",
+    "href": "http://www.radionikkei.jp/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "INT",
+    "name": "InterFM897",
+    "ascii_name": "InterFM897",
+    "ruby": "いんたーえふえむはちきゅうなな",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/INT/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/INT/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/INT/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/INT/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/INT/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/INT/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/INT/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/INT/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/INT/20151001094947.png",
+    "href": "https://www.interfm.co.jp/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "FMT",
+    "name": "TOKYO FM",
+    "ascii_name": "TOKYO FM",
+    "ruby": "とーきょーえふえむ",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/FMT/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/FMT/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/FMT/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/FMT/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/FMT/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/FMT/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/FMT/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/FMT/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/FMT/20200501093513.jpg",
+    "href": "https://www.tfm.co.jp/",
+    "tf_max_delay": 150
+  },
+  {
+    "id": "FMJ",
+    "name": "J-WAVE",
+    "ascii_name": "J-WAVE",
+    "ruby": "じぇいうぇーぶ",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/FMJ/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/FMJ/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/FMJ/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/FMJ/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/FMJ/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/FMJ/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/FMJ/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/FMJ/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/FMJ/20150403151103.jpg",
+    "href": "https://www.j-wave.co.jp/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "JORF",
+    "name": "ラジオ日本",
+    "ascii_name": "RF RADIO NIPPON",
+    "ruby": "らじおにっぽん",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/JORF/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/JORF/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/JORF/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/JORF/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/JORF/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/JORF/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/JORF/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/JORF/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/JORF/20181031231236.jpg",
+    "href": "http://www.jorf.co.jp/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "BAYFM78",
+    "name": "bayfm78",
+    "ascii_name": "bayfm78",
+    "ruby": "べいえふえむ",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/BAYFM78/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/BAYFM78/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/BAYFM78/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/BAYFM78/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/BAYFM78/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/BAYFM78/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/BAYFM78/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/BAYFM78/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/BAYFM78/20191231175320.jpg",
+    "href": "http://www.bayfm.co.jp/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "NACK5",
+    "name": "NACK5",
+    "ascii_name": "NACK5",
+    "ruby": "なっくふぁいぶ",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/NACK5/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/NACK5/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/NACK5/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/NACK5/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/NACK5/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/NACK5/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/NACK5/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/NACK5/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/NACK5/20160929170327.jpg",
+    "href": "https://www.nack5.co.jp/",
+    "tf_max_delay": 150
+  },
+  {
+    "id": "YFM",
+    "name": "ＦＭヨコハマ",
+    "ascii_name": "Fm yokohama 84.7",
+    "ruby": "えふえむよこはま",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/YFM/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/YFM/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/YFM/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/YFM/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/YFM/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/YFM/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/YFM/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/YFM/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/YFM/20200123134554.jpg",
+    "href": "https://www.fmyokohama.co.jp/",
+    "tf_max_delay": 90
+  },
+  {
+    "id": "HOUSOU-DAIGAKU",
+    "name": "放送大学",
+    "ascii_name": "HOUSOU-DAIGAKU",
+    "ruby": "ほうそうだいがく",
+    "areafree": 1,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/HOUSOU-DAIGAKU/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/HOUSOU-DAIGAKU/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/HOUSOU-DAIGAKU/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/HOUSOU-DAIGAKU/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/HOUSOU-DAIGAKU/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/HOUSOU-DAIGAKU/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/HOUSOU-DAIGAKU/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/HOUSOU-DAIGAKU/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/HOUSOU-DAIGAKU/20150805145127.png",
+    "href": "https://www.ouj.ac.jp/",
+    "tf_max_delay": 60
+  },
+  {
+    "id": "JOAK",
+    "name": "NHKラジオ第1（東京）",
+    "ascii_name": "JOAK",
+    "ruby": "えぬえいちけーらじおだいいちとうきょう",
+    "areafree": 0,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/JOAK/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/JOAK/20170922183839.png",
+    "href": "https://www.nhk.or.jp/radio/",
+    "tf_max_delay": 60
+  },
+  {
+    "id": "JOAK-FM",
+    "name": "NHK-FM（東京）",
+    "ascii_name": "JOAK-FM",
+    "ruby": "えぬえいちけーえふえむとうきょう",
+    "areafree": 0,
+    "timefree": 1,
+    "logo": [
+      "https://radiko.jp/v2/static/station/logo/JOAK-FM/lrtrim/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK-FM/lrtrim/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK-FM/lrtrim/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK-FM/lrtrim/688x160.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK-FM/224x100.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK-FM/258x60.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK-FM/448x200.png",
+      "https://radiko.jp/v2/static/station/logo/JOAK-FM/688x160.png"
+    ],
+    "banner": "https://radiko.jp/res/banner/JOAK-FM/20170922184116.png",
+    "href": "https://www.nhk.or.jp/radio/",
+    "tf_max_delay": 60
+  }
+]

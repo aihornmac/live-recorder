@@ -74,7 +74,7 @@ Specify recording content, since you may want to have more information other tha
 
 Specify login info:
 
-    $ live-recorder --mail test123@example.com' --password password 'http://radiko.jp/#!/ts/LFR/20200702010000'
+    $ live-recorder --mail test123@example.com --password password 'http://radiko.jp/#!/ts/LFR/20200702010000'
 
 Specify download concurrency:
 

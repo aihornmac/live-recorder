@@ -3,7 +3,7 @@
 ## [0.0.22] - 2020-07-03
 ### Added
 - Add common cli option `--verbose` to enable verbose mode
-- [radiko] Radiko now simulates mobile device to unblock geo restriction
+- [radiko] Radiko now simulates mobile device to unlock geo restriction
 
 ## [0.0.21] - 2020-07-02
 ### Added

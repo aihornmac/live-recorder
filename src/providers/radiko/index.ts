@@ -32,7 +32,7 @@ import { extname } from 'path'
 import { RADIO_AREA_ID } from './data'
 import { getLocalStorage } from './helpers'
 
-const DEFAULT_CONCURRENT = 8
+const DEFAULT_CONCURRENT = 256
 
 export async function commands(list: readonly string[], yargs: yargs.Argv) {
   const command = list[0] || ''
@@ -119,7 +119,7 @@ export function match(url: URL) {
         return argv
       },
       async * execute(options: CommonCreateOptions) {
-        console.log(`downloading ${info.data.type} ${info.data.id}`)
+        console.log('downloading', info.data)
 
         let login: undefined | {
           readonly mail: string

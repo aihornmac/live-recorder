@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.25] - 2020-07-03
+### Added
+- [radiko] increase default concurrency to 256
+
 ## [0.0.24] - 2020-07-03
 ### Fixed
 - [radiko] cope with wrong media sequence

@@ -50,7 +50,8 @@ export function match(url: URL) {
         }
 
         const getProjectPath = (roomInfo?: RoomInfo | void) => {
-          const projectPath = options.projectPath || path.join(
+          const projectPath = path.join(
+            options.projectPath || '',
             filenamify((() => {
               if (roomInfo) {
                 const name = roomInfo.room_name || roomInfo.main_name

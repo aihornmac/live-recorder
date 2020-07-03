@@ -10,9 +10,11 @@ export class M3UReader {
   private _ctx?: M3UActionTrack | M3UActionStream
 
   push(line: string) {
-    const ctx = this._ctx
-    this._ctx = undefined
     const index = this._index++
+    const ctx = this._ctx
+    if (!line && !ctx) return
+
+    this._ctx = undefined
 
     // match track
     if (line.startsWith('#EXTINF')) {

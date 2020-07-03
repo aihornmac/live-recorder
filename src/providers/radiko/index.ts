@@ -8,7 +8,6 @@ import * as filenamify from 'filenamify'
 import { sample } from 'lodash'
 
 import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
-import { M3UAction } from '../../utils/m3u'
 import { call, createSequancePromise, isObjectHasKey, once } from '../../utils/js'
 import {
   createClient,
@@ -28,7 +27,7 @@ import { fail } from '../../utils/error'
 import { ProgressBar } from '../../utils/progress-bar'
 import { formatDurationInSeconds, stringifyDuration } from '../common/helpers'
 import { waitForWriteStreamFinish } from '../../utils/node-stream'
-import { loopPlayList, parseStreamList, parseBandwidth, pickStream, printStreamChoices } from '../common/hls'
+import { loopPlayList, parseStreamList, parseBandwidth, pickStream, printStreamChoices, SequencedM3UAction } from '../common/hls'
 import { extname } from 'path'
 import { RADIO_AREA_ID } from './data'
 import { getLocalStorage } from './helpers'
@@ -434,7 +433,7 @@ async function executeHls(options: HLSOptions) {
           const buffer = await bufferPromise
           if (contents.has('chunks')) {
             const ext = path.extname(u.pathname)
-            await fs.promises.writeFile(path.join(chunksPath, `${action.mediaSequence}${ext}`), buffer)
+            await fs.promises.writeFile(path.join(chunksPath, `${action.programDateTime}${ext}`), buffer)
           }
           if (audioWriteStream) {
             audioWriteStream.write(buffer)
@@ -476,8 +475,6 @@ type CommonExecutionOptions = {
   readonly ensureUnique: boolean
   readonly contents: ReadonlySet<ContentType>
 }
-
-type SequencedM3UAction = M3UAction & { mediaSequence: number }
 
 type ContentType = (
   | 'audio'

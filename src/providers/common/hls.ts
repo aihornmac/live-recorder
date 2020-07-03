@@ -9,7 +9,10 @@ import { get } from '../../utils/request'
 import { fail } from '../../utils/error'
 import { MaybePromise } from '../../utils/types'
 
-export type SequencedM3UAction = M3UAction & { mediaSequence: number }
+export type SequencedM3UAction = M3UAction & {
+  programDateTime: number
+  mediaSequence: number
+}
 
 export function loopPlayList(options: {
   readonly getPlayList: string | (() => MaybePromise<string>)
@@ -25,7 +28,8 @@ export function loopPlayList(options: {
   call(async () => {
     const reader = new M3UReader()
 
-    let globalMediaSequence = 0
+    let nextMediaSequence = 0
+    let currentProgramDateTime = 0
 
     while (true) {
       if (destroyed) return
@@ -39,6 +43,7 @@ export function loopPlayList(options: {
       })
 
       let mediaSequence = 0
+      let programDateTime = 0
       for await (const line of readlineFromBuffer(playlist)) {
         const action = reader.push(line)
         if (action) {
@@ -49,23 +54,52 @@ export function loopPlayList(options: {
             }
             if (action.key === 'MEDIA-SEQUENCE') {
               mediaSequence = +action.value
+            } else if (action.key === 'PROGRAM-DATE-TIME') {
+              programDateTime = Date.parse(action.value)
             }
           }
-          if (action.kind === 'track') {
-            if (mediaSequence >= globalMediaSequence) {
-              globalMediaSequence = mediaSequence + 1
-              m3uActions.write({
-                ...action,
-                mediaSequence,
-              })
+          if (programDateTime) {
+            // use program date time to determine sequence
+            if (action.kind === 'track') {
+              if (programDateTime > currentProgramDateTime) {
+                currentProgramDateTime = programDateTime
+                nextMediaSequence = mediaSequence + 1
+                m3uActions.write({
+                  ...action,
+                  mediaSequence,
+                  programDateTime,
+                })
+              }
+              mediaSequence++
+            } else {
+              if (programDateTime >= currentProgramDateTime) {
+                m3uActions.write({
+                  ...action,
+                  mediaSequence,
+                  programDateTime,
+                })
+              }
             }
-            mediaSequence++
           } else {
-            if (mediaSequence >= globalMediaSequence) {
-              m3uActions.write({
-                ...action,
-                mediaSequence,
-              })
+            // use media sequence to determine sequence
+            if (action.kind === 'track') {
+              if (mediaSequence >= nextMediaSequence) {
+                nextMediaSequence = mediaSequence + 1
+                m3uActions.write({
+                  ...action,
+                  mediaSequence,
+                  programDateTime,
+                })
+              }
+              mediaSequence++
+            } else {
+              if (mediaSequence >= nextMediaSequence) {
+                m3uActions.write({
+                  ...action,
+                  mediaSequence,
+                  programDateTime,
+                })
+              }
             }
           }
         }

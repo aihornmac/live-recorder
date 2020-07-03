@@ -12,7 +12,6 @@ import { parseXML, getLocalStorage } from './helpers'
 import { mergeCookie } from '../../utils/cookie'
 import { Device } from './simulate-mobile'
 import { exists } from '../../utils/fs'
-import { isProduction } from '../../env'
 
 const API_PREFIX = 'https://radiko.jp'
 
@@ -382,7 +381,7 @@ async function downloadPlayerBuffer() {
 
 const getLocalExtractedPlayer = once(async () => {
   const filePath = (
-    isProduction
+    __IS_PROD__
       ? path.join(__dirname, (await import('./extracted-player.bin')).default)
       : require.resolve(`./extracted-player.bin`)
   )

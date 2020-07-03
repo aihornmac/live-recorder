@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.24] - 2020-07-03
+### Fixed
+- [radiko] cope with wrong media sequence
+- [SHOWROOM] fix wrong output path with cli output path option is specified
+
 ## [0.0.23] - 2020-07-03
 ### Added
 - [radiko] add support for live stream

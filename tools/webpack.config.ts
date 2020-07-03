@@ -27,6 +27,11 @@ function getWebpackConfiguration(): Configuration {
       libraryTarget: 'umd',
     },
 
+    node: {
+      __dirname: false,
+      __filename: false,
+    },
+
     devtool: 'source-map',
 
     resolve: {
@@ -48,6 +53,11 @@ function getWebpackConfiguration(): Configuration {
             },
           }],
         },
+        {
+          test: /\.bin$/,
+          exclude: m => m.includes('node_modules'),
+          loader: 'file-loader',
+        },
       ],
     },
 
@@ -62,7 +72,8 @@ function getWebpackConfiguration(): Configuration {
         }),
       ]),
       new DefinePlugin({
-        __VERSION__: JSON.stringify(require(packageJsonPath).version)
+        __VERSION__: JSON.stringify(require(packageJsonPath).version),
+        __IS_PROD__: JSON.stringify(true),
       })
     ],
   }

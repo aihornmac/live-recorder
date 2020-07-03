@@ -49,7 +49,7 @@ export const GEO_LOCATION = {
   '宮崎': [31.911096, 131.423893],
   '鹿児島': [31.560146, 130.557978],
   '沖縄': [26.2124, 127.680932],
-} as const
+}
 
 //range detail :http://www.gsi.go.jp/KOKUJYOHO/CENTER/zenken.htm
 
@@ -88,3 +88,467 @@ export const MODEL_LIST = [
   '101F', '201F', '202F', '301F', 'IS12F', 'F-03D', 'F-03E', 'M01', 'M305', 'M357', 'M555', 'M555', 'F-11D', 'F-06E', 'EM01F', 'F-05E', 'FJT21', 'F-01D', 'FAR70B', 'FAR7', 'F-04E', 'F-02E', 'F-10D', 'F-05D', 'FJL22', 'ISW11F', 'ISW13F', 'FJL21', 'F-074', 'F-07D',
   //fujitu arrows
 ]
+
+export const APP_VERSIONS = [
+  '7.2.0',
+  '7.1.13',
+  '7.1.12',
+  '7.1.11',
+  '7.1.1',
+  '7.1.0',
+  '7.0.9',
+  '7.0.8',
+  '7.0.7',
+  '7.0.6',
+  '7.0.5',
+  '7.0.4',
+  '7.0.3',
+  '7.0.2',
+  '7.0.1',
+  '7.0.0',
+  '6.4.7',
+  '6.4.6',
+]
+
+export const RADIO_AREA_ID = {
+  '802': {
+    name: 'FM802',
+    area: ['JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30']
+  },
+  'HOUSOU-DAIGAKU': {
+    name: '放送大学',
+    area: ['JP1', 'JP2', 'JP3', 'JP4', 'JP5', 'JP6', 'JP7', 'JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14', 'JP15', 'JP16', 'JP17', 'JP18', 'JP19', 'JP20', 'JP21', 'JP22', 'JP23', 'JP24', 'JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30', 'JP31', 'JP32', 'JP33', 'JP34', 'JP35', 'JP36', 'JP37', 'JP38', 'JP39', 'JP40', 'JP41', 'JP42', 'JP43', 'JP44', 'JP45', 'JP46', 'JP47']
+  },
+  'ALPHA-STATION': {
+    name: 'α-STATION FM京都',
+    area: ['JP26']
+  },
+  HBC: {
+    name: 'ＨＢＣラジオ',
+    area: ['JP1']
+  },
+  CCL: {
+    name: 'FM COCOLO',
+    area: ['JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30']
+  },
+  FMAICHI: {
+    name: 'FM AICHI',
+    area: ['JP21', 'JP23', 'JP24']
+  },
+  BAYFM78: {
+    name: 'bayfm78',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  'FM-FUJI': {
+    name: 'FM FUJI',
+    area: ['JP19']
+  },
+  RAB: {
+    name: 'ＲＡＢ青森放送',
+    area: ['JP2']
+  },
+  'JOAK-FM': {
+    name: 'NHK-FM（東京）',
+    area: ['JP1', 'JP2', 'JP3', 'JP4', 'JP5', 'JP6', 'JP7', 'JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14', 'JP15', 'JP16', 'JP17', 'JP18', 'JP19', 'JP20', 'JP21', 'JP22', 'JP23', 'JP24', 'JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30', 'JP31', 'JP32', 'JP33', 'JP34', 'JP35', 'JP36', 'JP37', 'JP38', 'JP39', 'JP40', 'JP41', 'JP42', 'JP43', 'JP44', 'JP45', 'JP46', 'JP47']
+  },
+  JOLK: {
+    name: 'NHKラジオ第1（福岡）',
+    area: ['JP40', 'JP41', 'JP42', 'JP43', 'JP44', 'JP45', 'JP46', 'JP47']
+  },
+  FMNAGASAKI: {
+    name: 'FM長崎',
+    area: ['JP42']
+  },
+  RKB: {
+    name: 'RKBラジオ',
+    area: ['JP40']
+  },
+  JOIK: {
+    name: 'NHKラジオ第1（札幌）',
+    area: ['JP1']
+  },
+  MRT: {
+    name: '宮崎放送',
+    area: ['JP45']
+  },
+  'K-MIX': {
+    name: 'K-MIX SHIZUOKA',
+    area: ['JP22']
+  },
+  KNB: {
+    name: 'ＫＮＢラジオ',
+    area: ['JP16']
+  },
+  TOKAIRADIO: {
+    name: '東海ラジオ',
+    area: ['JP21', 'JP23', 'JP24']
+  },
+  MRO: {
+    name: 'MROラジオ',
+    area: ['JP17']
+  },
+  YBS: {
+    name: 'YBSラジオ',
+    area: ['JP19']
+  },
+  JOYFM: {
+    name: 'エフエム宮崎',
+    area: ['JP45']
+  },
+  HELLOFIVE: {
+    name: 'エフエム石川',
+    area: ['JP17']
+  },
+  CROSSFM: {
+    name: 'cross fm',
+    area: ['JP40']
+  },
+  FMNIIGATA: {
+    name: 'FM NIIGATA',
+    area: ['JP15']
+  },
+  RKK: {
+    name: 'RKKラジオ',
+    area: ['JP43']
+  },
+  INT: {
+    name: 'InterFM897',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  'FM-OKAYAMA': {
+    name: 'ＦＭ岡山',
+    area: ['JP33']
+  },
+  CRT: {
+    name: 'CRT栃木放送',
+    area: ['JP9']
+  },
+  FMKAGAWA: {
+    name: 'FM香川',
+    area: ['JP37']
+  },
+  FMFUKUI: {
+    name: 'FM福井',
+    area: ['JP18']
+  },
+  RADIOBERRY: {
+    name: 'RadioBerry',
+    area: ['JP9']
+  },
+  CRK: {
+    name: 'ラジオ関西',
+    area: ['JP26', 'JP27', 'JP28']
+  },
+  RN1: {
+    name: 'ラジオNIKKEI第1 ',
+    area: ['JP1', 'JP2', 'JP3', 'JP4', 'JP5', 'JP6', 'JP7', 'JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14', 'JP15', 'JP16', 'JP17', 'JP18', 'JP19', 'JP20', 'JP21', 'JP22', 'JP23', 'JP24', 'JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30', 'JP31', 'JP32', 'JP33', 'JP34', 'JP35', 'JP36', 'JP37', 'JP38', 'JP39', 'JP40', 'JP41', 'JP42', 'JP43', 'JP44', 'JP45', 'JP46', 'JP47']
+  },
+  YBC: {
+    name: 'YBC山形放送',
+    area: ['JP6']
+  },
+  JOBK: {
+    name: 'NHKラジオ第1（大阪）',
+    area: ['JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30']
+  },
+  ROK: {
+    name: 'ラジオ沖縄',
+    area: ['JP47']
+  },
+  RADIONEO: {
+    name: 'RADIO NEO',
+    area: ['JP21', 'JP23', 'JP24']
+  },
+  KBC: {
+    name: 'KBCラジオ',
+    area: ['JP40']
+  },
+  KBS: {
+    name: 'KBS京都ラジオ ',
+    area: ['JP25', 'JP26']
+  },
+  FMFUKUOKA: {
+    name: 'FM FUKUOKA ',
+    area: ['JP40']
+  },
+  AFM: {
+    name: 'エフエム秋田',
+    area: ['JP5']
+  },
+  AFB: {
+    name: 'エフエム青森',
+    area: ['JP2']
+  },
+  NORTHWAVE: {
+    name: 'FM NORTH WAVE',
+    area: ['JP1']
+  },
+  RFC: {
+    name: 'RFCラジオ福島',
+    area: ['JP7']
+  },
+  'E-RADIO': {
+    name: 'e-radio FM滋賀',
+    area: ['JP25']
+  },
+  RFM: {
+    name: 'Rhythm Station　エフエム山形',
+    area: ['JP6']
+  },
+  JOCK: {
+    name: 'NHKラジオ第1（名古屋）',
+    area: ['JP16', 'JP17', 'JP18', 'JP21', 'JP22', 'JP23', 'JP24']
+  },
+  CBC: {
+    name: 'CBCラジオ',
+    area: ['JP21', 'JP23', 'JP24']
+  },
+  FMY: {
+    name: 'エフエム山口',
+    area: ['JP35']
+  },
+  RNC: {
+    name: 'RNC西日本放送',
+    area: ['JP37']
+  },
+  RNB: {
+    name: 'RNB南海放送',
+    area: ['JP38']
+  },
+  TBS: {
+    name: 'TBSラジオ',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  JOZK: {
+    name: 'NHKラジオ第1（松山）',
+    area: ['JP36', 'JP37', 'JP38', 'JP39']
+  },
+  TBC: {
+    name: 'TBCラジオ',
+    area: ['JP4']
+  },
+  HFM: {
+    name: '広島FM',
+    area: ['JP34']
+  },
+  FMTOYAMA: {
+    name: 'ＦＭとやま',
+    area: ['JP16']
+  },
+  'HI-SIX': {
+    name: 'エフエム高知',
+    area: ['JP39']
+  },
+  FMMIE: {
+    name: 'レディオキューブ ＦＭ三重',
+    area: ['JP24']
+  },
+  BSS: {
+    name: 'BSSラジオ',
+    area: ['JP31', 'JP32']
+  },
+  BSN: {
+    name: 'ＢＳＮラジオ',
+    area: ['JP15']
+  },
+  LFR: {
+    name: 'ニッポン放送',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  NBC: {
+    name: 'NBC長崎放送',
+    area: ['JP42']
+  },
+  JOHK: {
+    name: 'NHKラジオ第1（仙台）',
+    area: ['JP2', 'JP3', 'JP4', 'JP5', 'JP6', 'JP7']
+  },
+  KRY: {
+    name: 'ＫＲＹ山口放送',
+    area: ['JP35']
+  },
+  JORF: {
+    name: 'ラジオ日本',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  FMT: {
+    name: 'TOKYO FM',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  OBC: {
+    name: 'OBCラジオ大阪',
+    area: ['JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30']
+  },
+  FMN: {
+    name: 'ＦＭ長野',
+    area: ['JP20']
+  },
+  FMO: {
+    name: 'FM大阪',
+    area: ['JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30']
+  },
+  FMJ: {
+    name: 'J-WAVE',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  FMK: {
+    name: 'FMKエフエム熊本',
+    area: ['JP43']
+  },
+  FMI: {
+    name: 'エフエム岩手',
+    area: ['JP3']
+  },
+  FMF: {
+    name: 'ふくしまFM',
+    area: ['JP7']
+  },
+  JOAK: {
+    name: 'NHKラジオ第1（東京）',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14', 'JP15', 'JP19', 'JP20']
+  },
+  OBS: {
+    name: 'OBSラジオ',
+    area: ['JP44']
+  },
+  FM_OITA: {
+    name: 'エフエム大分',
+    area: ['JP44']
+  },
+  SBS: {
+    name: 'SBSラジオ',
+    area: ['JP22']
+  },
+  FBC: {
+    name: 'FBCラジオ',
+    area: ['JP18']
+  },
+  SBC: {
+    name: 'SBCラジオ',
+    area: ['JP20']
+  },
+  JRT: {
+    name: 'ＪＲＴ四国放送',
+    area: ['JP36']
+  },
+  KISSFMKOBE: {
+    name: 'Kiss FM KOBE',
+    area: ['JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30']
+  },
+  DATEFM: {
+    name: 'Date fm（エフエム仙台）',
+    area: ['JP4']
+  },
+  GBS: {
+    name: 'ぎふチャン',
+    area: ['JP21', 'JP23', 'JP24']
+  },
+  WBS: {
+    name: 'wbs和歌山放送',
+    area: ['JP30']
+  },
+  IBC: {
+    name: 'IBCラジオ',
+    area: ['JP3']
+  },
+  JOFK: {
+    name: 'NHKラジオ第1（広島）',
+    area: ['JP31', 'JP32', 'JP33', 'JP34', 'JP35']
+  },
+  NACK5: {
+    name: 'NACK5',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  IBS: {
+    name: 'IBS茨城放送',
+    area: ['JP8']
+  },
+  RCC: {
+    name: 'RCCラジオ',
+    area: ['JP34']
+  },
+  'FM-SANIN': {
+    name: 'エフエム山陰',
+    area: ['JP31', 'JP32']
+  },
+  YFM: {
+    name: 'ＦＭヨコハマ',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  'ZIP-FM': {
+    name: 'ZIP-FM',
+    area: ['JP21', 'JP23', 'JP24']
+  },
+  MBC: {
+    name: 'ＭＢＣラジオ',
+    area: ['JP46']
+  },
+  QRR: {
+    name: '文化放送',
+    area: ['JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14']
+  },
+  FMGUNMA: {
+    name: 'FM GUNMA',
+    area: ['JP10']
+  },
+  RKC: {
+    name: 'RKC高知放送',
+    area: ['JP39']
+  },
+  MBS: {
+    name: 'MBSラジオ',
+    area: ['JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30']
+  },
+  FM_OKINAWA: {
+    name: 'FM沖縄',
+    area: ['JP47']
+  },
+  ABC: {
+    name: 'ABCラジオ',
+    area: ['JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30']
+  },
+  'JOEU-FM': {
+    name: 'FM愛媛',
+    area: ['JP38']
+  },
+  STV: {
+    name: 'ＳＴＶラジオ',
+    area: ['JP1']
+  },
+  ABS: {
+    name: 'ABS秋田放送',
+    area: ['JP5']
+  },
+  RN2: {
+    name: 'ラジオNIKKEI第2',
+    area: ['JP1', 'JP2', 'JP3', 'JP4', 'JP5', 'JP6', 'JP7', 'JP8', 'JP9', 'JP10', 'JP11', 'JP12', 'JP13', 'JP14', 'JP15', 'JP16', 'JP17', 'JP18', 'JP19', 'JP20', 'JP21', 'JP22', 'JP23', 'JP24', 'JP25', 'JP26', 'JP27', 'JP28', 'JP29', 'JP30', 'JP31', 'JP32', 'JP33', 'JP34', 'JP35', 'JP36', 'JP37', 'JP38', 'JP39', 'JP40', 'JP41', 'JP42', 'JP43', 'JP44', 'JP45', 'JP46', 'JP47']
+  },
+  LOVEFM: {
+    name: 'LOVE FM',
+    area: ['JP40']
+  },
+  RBC: {
+    name: 'RBCiラジオ',
+    area: ['JP47']
+  },
+  RSK: {
+    name: 'ＲＳＫラジオ',
+    area: ['JP33']
+  },
+  'AIR-G': {
+    name: 'AIR-G\'（FM北海道）',
+    area: ['JP1']
+  },
+  FMGIFU: {
+    name: 'ＦＭ ＧＩＦＵ',
+    area: ['JP21']
+  },
+  FMPORT: {
+    name: 'FM PORT',
+    area: ['JP15']
+  },
+  MYUFM: {
+    name: 'μＦＭ',
+    area: ['JP46']
+  }
+}

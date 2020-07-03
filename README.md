@@ -24,6 +24,10 @@ Make an appointment in future:
 
     $ live-recorder --start-at '12:00 tomorrow' https://showroom-live.com/nekojita
 
+Enable verbose mode:
+
+    $ live-recorder --verbose https://showroom-live.com/nekojita
+
 More cli options can be found in [sections of corresponding  providers](#supported-sites) below
 
 ## Supported Sites

@@ -3,6 +3,7 @@ import { ApplicationError, fail } from '../../utils/error'
 export interface CommonArgv {
   readonly outputPath?: string
   readonly startAt?: string
+  readonly verbose?: boolean
 }
 
 export interface CommonCreateOptions {

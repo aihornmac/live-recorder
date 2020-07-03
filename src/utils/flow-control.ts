@@ -38,20 +38,34 @@ export function ensureSync<T>(request: () => T): T {
   }
 }
 
-export async function niceToHave<T>(request: () => MaybePromiseLike<T>): Promise<T | undefined> {
+export async function niceToHave<T>(
+  request: () => MaybePromiseLike<T>,
+  options?: {
+    readonly silent?: boolean
+  },
+): Promise<T | undefined> {
   try {
     return await request()
   } catch (e) {
-    console.error(e)
+    if (!options?.silent) {
+      console.error(e)
+    }
     return
   }
 }
 
-export function niceToHaveSync<T>(request: () => T): T | undefined {
+export function niceToHaveSync<T>(
+  request: () => T,
+  options?: {
+    readonly silent?: boolean
+  },
+): T | undefined {
   try {
     return request()
   } catch (e) {
-    console.error(e)
+    if (!options?.silent) {
+      console.error(e)
+    }
     return
   }
 }

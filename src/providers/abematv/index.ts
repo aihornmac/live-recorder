@@ -35,7 +35,7 @@ import { parseUrl } from './dispatch'
 import { fail } from '../../utils/error'
 import { ProgressBar } from '../../utils/progress-bar'
 import { formatDurationInSeconds, stringifyDuration } from '../common/helpers'
-import { ConfigOperator } from '../common/config'
+import { LocalStorage } from '../common/localstorage'
 import { waitForWriteStreamFinish } from '../../utils/node-stream'
 import { loopPlayList, SequencedM3UAction, parseStreamList, parseBandwidth, parseResolution, pickStream, printStreamChoices } from '../common/hls'
 
@@ -47,7 +47,7 @@ export interface Config {
   readonly token?: string
 }
 
-const getConfigOperator = once(() => new ConfigOperator<Config>(PROVIDER))
+const getLocalStorage = once(() => new LocalStorage<Config>(PROVIDER))
 
 export async function commands(list: readonly string[], yargs: yargs.Argv) {
   const command = list[0] || ''
@@ -64,9 +64,9 @@ export async function commands(list: readonly string[], yargs: yargs.Argv) {
         .parse(rest)
     )
     const { token } = argv
-    const op = getConfigOperator()
-    await op.set({
-      ...await op.get(),
+    const ls = getLocalStorage()
+    await ls.setConfig({
+      ...await ls.getConfig(),
       token,
     })
     console.log(`token is set to ${token}`)
@@ -126,7 +126,7 @@ export function match(url: URL) {
           usertoken = argv.token
           console.log(`using token ${argv.token}`)
         } else {
-          const presetToken = (await getConfigOperator().get())?.token
+          const presetToken = (await getLocalStorage().getConfig())?.token
           if (presetToken) {
             usertoken = presetToken
             console.log(`using token in configuration ${presetToken}`)

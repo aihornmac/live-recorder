@@ -1,6 +1,8 @@
 import * as yargs from 'yargs'
 import { parseDate } from 'chrono-node'
 import { formatDistance } from 'date-fns'
+import * as curlirize from 'axios-curlirize'
+import Axios from 'axios'
 import * as dispatch from './providers/dispatch'
 import { isErrorPayload, fail } from './utils/error'
 import * as chalk from 'chalk'
@@ -67,8 +69,18 @@ export async function execute() {
           demandOption: false,
           describe: 'Specify record start time based on your local timezone',
         })
+        .option('verbose', {
+          type: 'boolean',
+          nargs: 0,
+          demandOption: false,
+          describe: 'Enable verbose mode',
+        })
       )
-      const { startAt, outputPath } = recorder.argv()
+      const { startAt, outputPath, verbose } = recorder.argv()
+
+      // in verbose mode, we print every axios request as curl
+      if (verbose) curlirize(Axios)
+
       let recordStartAt = Date.now()
       if (startAt) {
         const startTime = parseDate(startAt)

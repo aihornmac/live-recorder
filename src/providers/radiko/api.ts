@@ -1,13 +1,18 @@
-import { add } from 'date-fns'
+import { add, format } from 'date-fns'
 import * as qs from 'qs'
+import * as fs from 'fs'
+import * as path from 'path'
 
 import { post, get } from '../../utils/request'
-import { once, stripUndefined } from '../../utils/js'
+import { once, stripUndefined, call } from '../../utils/js'
 import { ensure } from '../../utils/flow-control'
 import { swfExtract } from './swfextract'
 import { fail } from '../../utils/error'
-import { generateGPSInfo, parseXML } from './helpers'
+import { parseXML, getLocalStorage } from './helpers'
 import { mergeCookie } from '../../utils/cookie'
+import { Device } from './simulate-mobile'
+import { exists } from '../../utils/fs'
+import { isProduction } from '../../env'
 
 const API_PREFIX = 'https://radiko.jp'
 
@@ -19,8 +24,16 @@ export class Client {
     isPaidMember: boolean
     isAreaFree: boolean
   }
+  enableDevice: boolean
+
   private _areaId = ''
-  private _location?: string
+  private _device?: Device
+
+  constructor(options?: {
+    readonly unlockGeoRestriction?: boolean
+  }) {
+    this.enableDevice = options?.unlockGeoRestriction ?? true
+  }
 
   get areaId() {
     return this._areaId
@@ -28,15 +41,18 @@ export class Client {
 
   set areaId(areaId) {
     this._areaId = areaId
-    this._location = generateGPSInfo(areaId)
+    this._device = new Device(areaId)
   }
 
   getHeaders() {
-    return getHeaders({
-      location: this._location || undefined,
-      token: this.token || undefined,
-      cookie: this.cookie || undefined,
-    })
+    return {
+      ...getHeaders({
+        token: this.token || undefined,
+        cookie: this.cookie || undefined,
+      }),
+      ...(this.enableDevice && this._device?.getHeaders() || {}),
+      'X-Radiko-AreaId': this._areaId,
+    }
   }
 }
 
@@ -220,11 +236,14 @@ export function getProgramStreamListUrl() {
 }
 
 export async function getAuthToken(client: Client) {
-  const [playerBuffer, { token, keyOffset, keyLength }] = await Promise.all([
-    getPlayerBuffer(),
+  const [{ token, keyOffset, keyLength }, extractedPlayerBuffer] = await Promise.all([
     auth1(client),
+    call(async () => {
+      if (client.enableDevice) return getLocalExtractedPlayer()
+      return swfExtract(await getPlayerBuffer())
+    })
   ])
-  const partialKey = await getPartialKey(playerBuffer, keyOffset, keyLength)
+  const partialKey = extractedPlayerBuffer.slice(keyOffset, keyOffset + keyLength).toString('base64')
   const ret = await auth2(client, token, partialKey)
   verifyAuth2Response(ret)
   return token
@@ -318,7 +337,7 @@ export function parseProgramSecond(time: number | string) {
  */
 async function auth1(client: Client) {
   const url = getAPIUrl(`/auth1`)
-  const res = await post<unknown>(url, undefined, {
+  const res = await get<unknown>(url, {
     headers: client.getHeaders(),
   })
   const headers: Headers = res.headers
@@ -327,11 +346,6 @@ async function auth1(client: Client) {
     keyOffset: parseInt(String(headers['x-radiko-keyoffset']), 10),
     keyLength: parseInt(String(headers['x-radiko-keylength']), 10),
   }
-}
-
-async function getPartialKey(playerBuffer: Buffer, offset: number, length: number) {
-  const buf = await swfExtract(playerBuffer)
-  return buf.slice(offset, offset + length).toString('base64')
 }
 
 /**
@@ -345,6 +359,7 @@ async function auth2(client: Client, token: string, partialKey: string) {
       'X-Radiko-Authtoken': token,
       'X-Radiko-Partialkey': partialKey,
     },
+    validateStatus: status => status === 200 || status === 401
   })
   return res.data
 }
@@ -358,11 +373,39 @@ function verifyAuth2Response(text: string) {
   }
 }
 
-const getPlayerBuffer = once(() => ensure(async () => {
+async function downloadPlayerBuffer() {
   const res = await get<Buffer>(`${API_PREFIX}/apps/js/flash/myplayer-release.swf`, {
     responseType: 'arraybuffer'
   })
   return res.data
+}
+
+const getLocalExtractedPlayer = once(async () => {
+  const filePath = (
+    isProduction
+      ? path.join(__dirname, (await import('./extracted-player.bin')).default)
+      : require.resolve(`./extracted-player.bin`)
+  )
+  return fs.promises.readFile(filePath)
+})
+
+const getPlayerBuffer = once(() => ensure(async () => {
+  const ls = getLocalStorage()
+  const datekey = format(new Date(), 'yyyyLLdd')
+  const folderPath = path.join(ls.path, 'player')
+  const filePath = path.join(folderPath, datekey)
+  const stat = await exists(filePath)
+  if (stat) {
+    if (stat.isFile()) {
+      return fs.promises.readFile(filePath)
+    }
+    throw fail(`player.swf is not a file, see ${filePath}`)
+  }
+  const buf = await downloadPlayerBuffer()
+  await fs.promises.rmdir(path.dirname(filePath), { recursive: true })
+  await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+  await fs.promises.writeFile(filePath, buf)
+  return buf
 }))
 
 function getAPIUrl(uri: string, version: 'v2' | 'v3' = 'v2') {
@@ -372,7 +415,6 @@ function getAPIUrl(uri: string, version: 'v2' | 'v3' = 'v2') {
 function getHeaders(options?: {
   readonly token?: string
   readonly cookie?: string
-  readonly location?: string
 }) {
   if (!options) options = {}
   return stripUndefined({
@@ -383,7 +425,6 @@ function getHeaders(options?: {
     'X-Radiko-User': 'test-stream',
     'X-Radiko-Device': 'pc',
     'X-Radiko-AuthToken': options.token,
-    'X-Radiko-Location': options.location,
     'Cookie': options.cookie,
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36',
   })

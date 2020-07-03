@@ -5,41 +5,32 @@ import { format } from 'date-fns'
 import { URL } from 'url'
 import * as chalk from 'chalk'
 import * as filenamify from 'filenamify'
+import { sample } from 'lodash'
 
 import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
 import { M3UAction } from '../../utils/m3u'
-import { call, createSequancePromise, once } from '../../utils/js'
+import { call, createSequancePromise, isObjectHasKey, once } from '../../utils/js'
 import {
   createClient,
   getProgramStreamList,
-  Client,
   getProgramByStartTime,
   getProgramStreamListUrl,
+  getAreaId,
 } from './api'
 import { PipeStream } from '../../utils/stream'
-import { ensure } from '../../utils/flow-control'
+import { ensure, niceToHave } from '../../utils/flow-control'
 import { get } from '../../utils/request'
 import { parseUrl } from './dispatch'
 import { fail } from '../../utils/error'
 import { ProgressBar } from '../../utils/progress-bar'
 import { formatDurationInSeconds, stringifyDuration } from '../common/helpers'
-import { ConfigOperator } from '../common/config'
 import { waitForWriteStreamFinish } from '../../utils/node-stream'
 import { loopPlayList, parseStreamList, parseBandwidth, pickStream, printStreamChoices } from '../common/hls'
 import { extname } from 'path'
-
-const PROVIDER = 'radiko'
+import { RADIO_AREA_ID } from './data'
+import { getLocalStorage } from './helpers'
 
 const DEFAULT_CONCURRENT = 8
-
-export interface Config {
-  readonly login?: {
-    readonly mail: string
-    readonly cipher: string
-  }
-}
-
-const getConfigOperator = once(() => new ConfigOperator<Config>(PROVIDER))
 
 export async function commands(list: readonly string[], yargs: yargs.Argv) {
   const command = list[0] || ''
@@ -62,15 +53,22 @@ export async function commands(list: readonly string[], yargs: yargs.Argv) {
         .parse(rest)
     )
     const { mail, password } = argv
-    const op = getConfigOperator()
-    await op.set({
-      ...await op.get(),
+    const ls = getLocalStorage()
+    await ls.setConfig({
+      ...await ls.getConfig(),
       login: {
         mail,
         cipher: Buffer.from(password, 'utf8').toString('base64'),
       }
     })
     console.log(`user is set to ${mail}`)
+  } else if (command === 'logout') {
+    const ls = getLocalStorage()
+    await ls.setConfig({
+      ...await ls.getConfig(),
+      login: undefined,
+    })
+    console.log(`user is removed`)
   }
 }
 
@@ -133,7 +131,7 @@ export function match(url: URL) {
           }
           console.log(`using user ${argv.mail}`)
         } else {
-          const presetLogin = (await getConfigOperator().get())?.login
+          const presetLogin = (await getLocalStorage().getConfig())?.login
           if (presetLogin) {
             login = {
               mail: presetLogin.mail,
@@ -154,8 +152,6 @@ export function match(url: URL) {
 
         console.log(`concurrent ${concurrency}`)
 
-        const client = await createClient({ login })
-
         const folderPath = path.resolve(process.cwd(), options.projectPath || '')
 
         const execute = call(() => {
@@ -163,12 +159,11 @@ export function match(url: URL) {
 
           if (data.type === 'station') {
             const { startTime } = data
-            console.log({ data })
             if (startTime) {
               return () => executeStationByStartTime({
                 stationId: data.id,
                 startTime,
-                client,
+                login,
                 concurrency,
                 folderPath,
                 ensureUnique: !argv.noHash,
@@ -188,11 +183,27 @@ export function match(url: URL) {
   }
 }
 
+const getCurrentAreaId = once(() => niceToHave(() => getAreaId(), { silent: true }))
+
+async function getAreaIdByStationId(stationId: string) {
+  if (isObjectHasKey(RADIO_AREA_ID, stationId)) {
+    const { area } = RADIO_AREA_ID[stationId]
+    const currentAreaId = await getCurrentAreaId()
+    if (currentAreaId && area.includes(currentAreaId)) return currentAreaId
+    return sample(area)!
+  }
+  return undefined
+}
+
 async function executeStationByStartTime(options: CommonExecutionOptions & {
   readonly stationId: string
   readonly startTime: number
 }) {
-  const { stationId, startTime, client, folderPath, concurrency, ensureUnique, contents } = options
+  const { stationId, startTime, login, folderPath, concurrency, ensureUnique, contents } = options
+
+  const areaId = await getAreaIdByStationId(stationId)
+
+  const client = await createClient({ login, areaId })
 
   const program = await getProgramByStartTime(client, {
     stationId,
@@ -372,7 +383,10 @@ async function executeHls(options: {
 }
 
 type CommonExecutionOptions = {
-  readonly client: Client
+  readonly login?: {
+    readonly mail: string
+    readonly password: string
+  }
   readonly concurrency: number
   readonly folderPath: string
   readonly ensureUnique: boolean

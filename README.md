@@ -86,4 +86,4 @@ Disable hash in generated filename:
 
 Set login info in configuration:
 
-    $ live-recorder abematv login --mail test123@example.com --password password
+    $ live-recorder radiko login --mail test123@example.com --password password

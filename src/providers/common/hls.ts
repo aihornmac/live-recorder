@@ -7,14 +7,15 @@ import { call, later } from '../../utils/js'
 import { ensure } from '../../utils/flow-control'
 import { get } from '../../utils/request'
 import { fail } from '../../utils/error'
+import { MaybePromise } from '../../utils/types'
 
 export type SequencedM3UAction = M3UAction & { mediaSequence: number }
 
 export function loopPlayList(options: {
-  readonly url: string
+  readonly getPlayList: string | (() => MaybePromise<string>)
   readonly interval: number
 }) {
-  const { url, interval } = options
+  const { getPlayList, interval } = options
 
   const m3uActions = new PipeStream<SequencedM3UAction>()
 
@@ -30,7 +31,10 @@ export function loopPlayList(options: {
       if (destroyed) return
 
       const playlist = await ensure(async () => {
-        const res = await get<string>(url, { responseType: 'text' })
+        if (typeof getPlayList === 'function') {
+          return getPlayList()
+        }
+        const res = await get<string>(getPlayList, { responseType: 'text' })
         return res.data
       })
 

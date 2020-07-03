@@ -250,7 +250,7 @@ async function executeEpisode(options: CommonExecutionOptions & {
   if (!playListUrl) return
 
   const { actions } = loopPlayList({
-    url: playListUrl.toString(),
+    getPlayList: playListUrl.toString(),
     interval: 5000,
   })
 
@@ -300,7 +300,7 @@ async function executeOnair(options: CommonExecutionOptions & {
   if (!playListUrl) return
 
   const { actions } = loopPlayList({
-    url: playListUrl.toString(),
+    getPlayList: playListUrl.toString(),
     interval: 5000,
   })
 
@@ -417,7 +417,7 @@ async function executeSlot(options: CommonExecutionOptions & {
   if (!playListUrl) return
 
   const { actions } = loopPlayList({
-    url: playListUrl.toString(),
+    getPlayList: playListUrl.toString(),
     interval: 5000,
   })
 

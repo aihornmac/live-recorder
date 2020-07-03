@@ -8,15 +8,18 @@ import { call } from '../../utils/js'
 
 const MATCH_RADIKO_URL = (
   `^https?://radiko.jp/#!/(?:${[
+    `live/(?<liveStationId>[^/?]+)`,
     `ts/(?<stationIdByTime>[^/?]+)/(?<startTime>[^/?]+)`,
-    `ts/(?<stationId>[^/?]+)`,
   ].join('|')})`
 )
 
 export type ParsedRadikoInfo = {
-  type: 'station'
+  type: 'live'
   id: string
-  startTime?: number
+} | {
+  type: 'replay'
+  id: string
+  startTime: number
 }
 
 export function parseUrl(url: URL) {
@@ -26,11 +29,11 @@ export function parseUrl(url: URL) {
   const groups = match.groups || {}
 
   const data = call((): ParsedRadikoInfo => {
-    if (typeof groups.stationId === 'string')  {
-      return { type: 'station', id: groups.stationId }
+    if (typeof groups.liveStationId === 'string')  {
+      return { type: 'live', id: groups.liveStationId }
     }
     if (typeof groups.stationIdByTime === 'string')  {
-      return { type: 'station', id: groups.stationIdByTime, startTime: +groups.startTime }
+      return { type: 'replay', id: groups.stationIdByTime, startTime: +groups.startTime }
     }
     throw failProviderInvalid('radiko', `unknown type`)
   })

@@ -9,7 +9,7 @@ import { ensure } from '../../utils/flow-control'
 import { swfExtract } from './swfextract'
 import { fail } from '../../utils/error'
 import { parseXML, getLocalStorage } from './helpers'
-import { mergeCookie } from '../../utils/cookie'
+import { mergeCookie, stringifyCookie, parseCookie } from '../../utils/cookie'
 import { Device } from './simulate-mobile'
 import { exists } from '../../utils/fs'
 
@@ -105,8 +105,10 @@ export async function getStationList(client: Client) {
     headers: client.getHeaders(),
   })
   const xml = res.data
-  const data = parseXML(xml) as {
+  const data = parseXML<{
     stations: {
+      '@_area_id': string
+      '@_area_name': string
       station: Array<{
         id: string
         name: string
@@ -114,14 +116,19 @@ export async function getStationList(client: Client) {
         ruby: string
         areafree: number
         timefree: number
-        logo: string[]
+        logo: Array<{
+          '#text': string
+          '@_width': string
+          '@_height': string
+          '@_align': 'center' | 'lrtrim'
+        }>
         banner: string
         href: string
         tf_max_delay: number
       }>
     }
-  }
-  return data.stations.station
+  }>(xml)
+  return data.stations
 }
 
 /**
@@ -207,24 +214,23 @@ export async function getProgramByStartTime(client: Client, options: {
 
 /**
  * get m3u8 playlist of program
- * @param token
- * @param stationId LFR
+ * @param stationId e.g. LFR
  * @param fromTime e.g. 20200702010000
  * @param toTime e.g. 20200702030000
  */
 export async function getProgramStreamList(client: Client, options: {
   readonly stationId: string
-  readonly fromTime: number
-  readonly toTime: number
+  readonly fromTime?: number
+  readonly toTime?: number
 }) {
   const { stationId, fromTime, toTime } = options
   const url = getProgramStreamListUrl()
   const res = await post<string>(url, undefined, {
-    params: {
+    params: stripUndefined({
       station_id: stationId,
       ft: fromTime,
       to: toTime,
-    },
+    }),
     headers: client.getHeaders(),
   })
   return res.data
@@ -232,6 +238,28 @@ export async function getProgramStreamList(client: Client, options: {
 
 export function getProgramStreamListUrl() {
   return getAPIUrl(`/ts/playlist.m3u8`)
+}
+
+export function createPlayListGetter(url: string) {
+  const cookies: { readonly [key: string]: string } = {}
+  let cookiesString = ''
+  return async () => {
+    const res = await get<string>(url, {
+      headers: {
+        Cookie: cookiesString,
+      },
+    })
+    const headers: Headers = res.headers
+    const cookie = headers['set-cookie']
+    if (cookie) {
+      const list = Array.isArray(cookie) ? cookie : [cookie]
+      for (const item of list) {
+        Object.assign(cookies, parseCookie(item))
+      }
+      cookiesString = stringifyCookie(cookies)
+    }
+    return res.data
+  }
 }
 
 export async function getAuthToken(client: Client) {
@@ -417,7 +445,6 @@ function getHeaders(options?: {
 }) {
   if (!options) options = {}
   return stripUndefined({
-    Host: 'radiko.jp',
     Pragma: 'no-cache',
     'X-Radiko-App': 'pc_ts',
     'X-Radiko-App-Version': '4.0.0',

@@ -1,5 +1,6 @@
 import * as crypto from 'crypto'
 import { get, post } from '../../utils/request'
+import { stripUndefined } from '../../utils/js'
 
 const API_PREFIX = `https://api.abema.io/v1`
 
@@ -155,7 +156,7 @@ export async function getChannelList(options?: {
     }>
   }>(url, {
     responseType: 'json',
-    params: options,
+    params: stripUndefined(options),
   })
   return res.data.channels
 }
@@ -229,11 +230,11 @@ export async function getVideoSeriesProgramsInfo(
     version: string
   }>(url, {
     responseType: 'json',
-    params: {
+    params: stripUndefined({
       ...options,
       seasonId,
       seriesVersion,
-    },
+    }),
     headers: {
       Authorization: `Bearer ${userToken}`
     },

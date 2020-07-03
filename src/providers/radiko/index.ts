@@ -16,6 +16,9 @@ import {
   getProgramByStartTime,
   getProgramStreamListUrl,
   getAreaId,
+  Client,
+  getStationList,
+  createPlayListGetter,
 } from './api'
 import { PipeStream } from '../../utils/stream'
 import { ensure, niceToHave } from '../../utils/flow-control'
@@ -157,22 +160,28 @@ export function match(url: URL) {
         const execute = call(() => {
           const { data } = info
 
-          if (data.type === 'station') {
-            const { startTime } = data
-            if (startTime) {
-              return () => executeStationByStartTime({
-                stationId: data.id,
-                startTime,
-                login,
-                concurrency,
-                folderPath,
-                ensureUnique: !argv.noHash,
-                contents,
-              })
-            }
+          if (data.type === 'replay') {
+            return () => executeReplay({
+              stationId: data.id,
+              startTime: data.startTime,
+              login,
+              concurrency,
+              folderPath,
+              ensureUnique: !argv.noHash,
+              contents,
+            })
+          } else if (data.type === 'live') {
+            return () => executeLive({
+              stationId: data.id,
+              login,
+              concurrency,
+              folderPath,
+              ensureUnique: !argv.noHash,
+              contents,
+            })
           }
 
-          throw fail(`unsupported type ${data.type}`)
+          throw fail(`unsupported type ${(data as { readonly [key: string]: unknown }).type}`)
         })
 
         yield 'prepared' as const
@@ -195,7 +204,65 @@ async function getAreaIdByStationId(stationId: string) {
   return undefined
 }
 
-async function executeStationByStartTime(options: CommonExecutionOptions & {
+async function executeLive(options: CommonExecutionOptions & {
+  readonly stationId: string
+}) {
+  const { stationId, login, folderPath, concurrency, ensureUnique, contents } = options
+
+  const areaId = await getAreaIdByStationId(stationId)
+
+  const client = await createClient({ login, areaId })
+
+  const list = await getStationList(client)
+  const station = list.station.find(x => x.id === stationId)
+  const title = station?.name || stationId
+
+  const fileTitle = title ? filenamify(title, { replacement: '-' }) : ''
+  const fileHash = fileTitle && !ensureUnique ? '' : format(new Date(), 'yyyyLLddHHmmss')
+
+  const downloadCoverPromise = !(contents.has('cover') && station) ? undefined : call(() => ensure(async () => {
+    const url = new URL(station.banner)
+    const ext = extname(url.pathname)
+    const fileName = [fileTitle, 'cover', fileHash].filter(Boolean).join('.') + ext
+    const filePath = path.join(folderPath, fileName)
+
+    console.log(`writing cover to ${filePath}`)
+
+    const buffer = await ensure(async () => {
+      const res = await get<Buffer>(url.toString(), { responseType: 'arraybuffer' })
+      return res.data
+    })
+    await fs.promises.writeFile(filePath, buffer)
+  }))
+
+  const hlsPromise = !shouldExecuteHls(contents) ? undefined : call(async () => {
+    const fileName = [fileTitle, fileHash, 'aac'].filter(Boolean).join('.')
+    const filePath = path.join(folderPath, fileName)
+
+    console.log(`writing hls to ${filePath}`)
+
+    const streamListContent = await ensure(() => {
+      return getProgramStreamList(client, {
+        stationId,
+      })
+    })
+
+    await executeStreamList({
+      client,
+      streamListContent,
+      filePath,
+      concurrency,
+      contents,
+    })
+  })
+
+  await Promise.all([
+    downloadCoverPromise,
+    hlsPromise,
+  ])
+}
+
+async function executeReplay(options: CommonExecutionOptions & {
   readonly stationId: string
   readonly startTime: number
 }) {
@@ -217,68 +284,42 @@ async function executeStationByStartTime(options: CommonExecutionOptions & {
   const fileHash = fileTitle && !ensureUnique ? '' : format(new Date(), 'yyyyLLddHHmmss')
 
   const downloadCoverPromise = !contents.has('cover') ? undefined : call(() => ensure(async () => {
-    const ext = extname(program.img) || '.png'
+    const url = new URL(program.img)
+    const ext = extname(url.pathname)
     const fileName = [fileTitle, String(startTime), 'cover', fileHash].filter(Boolean).join('.') + ext
     const filePath = path.join(folderPath, fileName)
 
     console.log(`writing cover to ${filePath}`)
 
     const buffer = await ensure(async () => {
-      const res = await get<Buffer>(program.img, { responseType: 'arraybuffer' })
+      const res = await get<Buffer>(url.toString(), { responseType: 'arraybuffer' })
       return res.data
     })
     await fs.promises.writeFile(filePath, buffer)
   }))
 
-  const hlsPromise = !(
-    contents.has('audio') ||
-    contents.has('chunks') ||
-    contents.has('m3u8')
-  ) ? undefined : call(async () => {
+  const hlsPromise = !shouldExecuteHls(contents) ? undefined : call(async () => {
     const fileName = [fileTitle, String(startTime), fileHash, 'aac'].filter(Boolean).join('.')
     const filePath = path.join(folderPath, fileName)
 
     console.log(`writing hls to ${filePath}`)
 
-    const streamListContent = await getProgramStreamList(client, {
-      stationId,
-      fromTime: +program['@_ft'],
-      toTime: +program['@_to'],
+    const streamListContent = await ensure(() => {
+      return getProgramStreamList(client, {
+        stationId,
+        fromTime: +program['@_ft'],
+        toTime: +program['@_to'],
+      })
     })
 
-    const streamList = await parseStreamList({
-      content: streamListContent,
-      parser: {
-        BANDWIDTH: parseBandwidth,
-      },
-    })
-
-    if (!streamList.length) {
-      console.error(chalk.redBright(`No stream found`))
-      return
-    }
-
-    const pickedStream = pickStream(streamList, 'best')!
-
-    printStreamChoices(streamList, pickedStream)
-
-    const playListUrl = new URL(pickedStream.url, getProgramStreamListUrl()).toString()
-
-    const { actions } = loopPlayList({
-      url: playListUrl.toString(),
-      interval: 5000,
-    })
-
-    await executeHls({
-      url: playListUrl,
+    await executeStreamList({
+      client,
+      streamListContent,
       filePath,
       concurrency,
-      actions,
       contents,
     })
   })
-
-
 
   await Promise.all([
     downloadCoverPromise,
@@ -286,13 +327,56 @@ async function executeStationByStartTime(options: CommonExecutionOptions & {
   ])
 }
 
-async function executeHls(options: {
+async function executeStreamList(options: Omit<HLSOptions, 'url' | 'actions'> & {
+  readonly client: Client
+  readonly filePath: string
+  readonly streamListContent: string
+}) {
+  const { streamListContent } = options
+
+  const streamList = await parseStreamList({
+    content: streamListContent,
+    parser: {
+      BANDWIDTH: parseBandwidth,
+    },
+  })
+
+  if (!streamList.length) {
+    console.error(chalk.redBright(`No stream found`))
+    return
+  }
+
+  const pickedStream = pickStream(streamList, 'best')!
+
+  printStreamChoices(streamList, pickedStream)
+
+  const playListUrl = new URL(pickedStream.url, getProgramStreamListUrl()).toString()
+
+  const { actions } = loopPlayList({
+    getPlayList: createPlayListGetter(playListUrl),
+    interval: 5000,
+  })
+
+  await executeHls({
+    ...options,
+    url: playListUrl,
+    actions,
+  })
+}
+
+type HLSOptions = {
   readonly url: string,
   readonly filePath: string
   readonly concurrency: number
   readonly actions: AsyncIterable<SequencedM3UAction> | Iterable<SequencedM3UAction>,
   readonly contents: ReadonlySet<ContentType>
-}) {
+}
+
+function shouldExecuteHls(contents: ReadonlySet<ContentType>) {
+  return contents.has('audio') || contents.has('chunks') || contents.has('m3u8')
+}
+
+async function executeHls(options: HLSOptions) {
   const { filePath, concurrency, actions, contents } = options
 
   const concurrent = new PipeStream<void>()

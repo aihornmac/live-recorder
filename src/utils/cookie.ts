@@ -3,10 +3,18 @@ import { parse, serialize } from 'cookie'
 export function mergeCookie(strList: string[]) {
   const result: { [key: string]: string } = {}
   for (const str of strList) {
-    const obj = parse(str)
-    delete obj.path
-    delete obj.expires
-    Object.assign(result, obj)
+    Object.assign(result, parseCookie(str))
   }
-  return Object.entries(result).map(([key, value]) => serialize(key, value)).join('; ')
+  return stringifyCookie(result)
+}
+
+export function parseCookie(setcookie: string) {
+  const obj = parse(setcookie)
+  delete obj.path
+  delete obj.expires
+  return obj
+}
+
+export function stringifyCookie(obj: { readonly [key: string]: string }) {
+  return Object.entries(obj).map(([key, value]) => serialize(key, value)).join('; ')
 }

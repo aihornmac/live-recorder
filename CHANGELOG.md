@@ -1,13 +1,17 @@
 # Changelog
 
+## [0.0.23] - 2020-07-03
+### Added
+- [radiko] add support for live stream
+
 ## [0.0.22] - 2020-07-03
 ### Added
-- Add common cli option `--verbose` to enable verbose mode
-- [radiko] Radiko now simulates mobile device to unlock geo restriction
+- add common cli option `--verbose` to enable verbose mode
+- [radiko] radiko now simulates mobile device to unlock geo restriction
 
 ## [0.0.21] - 2020-07-02
 ### Added
-- [radiko] Basic support for radiko
+- [radiko] basic support for radiko
 
 ## [0.0.20] - 2020-06-25
 ### Added
@@ -20,17 +24,17 @@
 
 ## [0.0.18] - 2020-06-25
 ### Added
-- cope with SHOWROOM live interruption
+- [SHOWROOM] cope with live interruption
 
 ## [0.0.17] - 2020-06-24
 ### Added
 - add supports for more AbemaTV stream type: `onair` `serires` `season` `episode`
-- AbemaTV cli now display progress bar while recording hls stream
+- [AbemaTV] cli now display progress bar while recording hls stream
 
 ## [0.0.16] - 2020-06-24
 ### Fixed
-- showroom livechat recording now exists when live ends
 - cli `--help` `-h` now prints help even without url input
+- [SHOWROOM] livechat recording now exists when live ends
 
 ### Added
 - cli `--version` `-v` now prints tool version
@@ -41,4 +45,4 @@
 
 ## [0.0.14] - 2020-06-22
 ### Added
-- Basic support for AbemaTV
+- [AmebaTV] basic support for AbemaTV

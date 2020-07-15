@@ -1,3 +1,5 @@
 export * as abematv from './abematv'
+export * as linelive from './linelive'
 export * as radiko from './radiko'
 export * as showroom from './showroom'
+export * as m3u8 from './m3u8'

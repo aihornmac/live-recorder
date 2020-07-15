@@ -7,7 +7,7 @@ import {
 import { call } from '../../utils/js'
 
 const MATCH_ABEMATV_URL = (
-  `^https://abema.tv/(?:${[
+  `^https?://abema.tv/(?:${[
     `now-on-air/(?<onair>[^?]+)`,
     `video/title/(?<series>[^?]+)`,
     `video/episode/(?<episode>[^?]+)`,
@@ -15,7 +15,7 @@ const MATCH_ABEMATV_URL = (
   ].join('|')})`
 )
 
-export type ParsedAbematvInfo = {
+export type ParsedAbemaTVInfo = {
   type: 'onair' | 'episode' | 'slot'
   id: string
 } | {
@@ -30,7 +30,7 @@ export function parseUrl(url: URL) {
 
   const groups = match.groups || {}
 
-  const data = call((): ParsedAbematvInfo => {
+  const data = call((): ParsedAbemaTVInfo => {
     if (typeof groups.onair === 'string')  {
       return { type: 'onair', id: groups.onair }
     }

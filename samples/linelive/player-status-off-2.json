@@ -1,0 +1,38 @@
+{
+  "freeLoveCount": 0,
+  "premiumLoveCount": 330,
+  "limitedLoveCount": 234,
+  "ownedLimitedLoveCount": 0,
+  "sentLimitedLoveCount": 0,
+  "liveHLSURLs": {
+    "abr": null,
+    "aac": null,
+    "720": null,
+    "480": null,
+    "360": null,
+    "240": null,
+    "144": null
+  },
+  "archivedHLSURLs": {
+    "abr": null,
+    "aac": null,
+    "720": null,
+    "480": null,
+    "360": null,
+    "240": null,
+    "144": null
+  },
+  "liveStatus": "FINISHED",
+  "face2face": null,
+  "apistatusCode": 200,
+  "chat": null,
+  "isFollowing": null,
+  "isOAFollowRequired": false,
+  "isChannelBlocked": false,
+  "isCollaborating": false,
+  "isCollaboratable": false,
+  "canRequestCollaboration": true,
+  "paidLive": null,
+  "subscriptionLive": null,
+  "status": 200
+}

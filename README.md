@@ -37,6 +37,8 @@ More cli options can be found in [sections of corresponding  providers](#support
 | [SHOWROOM](#showroom) | <https://www.showroom-live.com/> |
 | [AbemaTV](#abematv) | <https://abema.tv/> |
 | [radiko](#radiko) | <https://radiko.jp/> |
+| [LineLive](#livelive) | <https://live.line.me//> |
+| [M3U8](#m3u8) | - |
 
 ### SHOWROOM
 
@@ -46,7 +48,7 @@ Record live chat:
 
 ### AbemaTV
 
-Specify recording content, since you may want to have more information other than video.
+Specify recording content, since you may want to have more information other than stream.
 
     $ live-recorder --content video,chunks,m3u8 https://abema.tv/channels/special-plus/slots/CVRwLESD4GsvQw
 
@@ -68,9 +70,9 @@ Set token in configuration:
 
 ### radiko
 
-Specify recording content, since you may want to have more information other than video.
+Specify recording content, since you may want to have more information other than stream.
 
-    $ live-recorder --content audio.cover,chunks,m3u8 'http://radiko.jp/#!/ts/LFR/20200702010000'
+    $ live-recorder --content audio,cover,chunks,m3u8 'http://radiko.jp/#!/ts/LFR/20200702010000'
 
 Specify login info:
 
@@ -87,3 +89,35 @@ Disable hash in generated filename:
 Set login info in configuration:
 
     $ live-recorder radiko login --mail test123@example.com --password password
+
+### LineLive
+
+Specify recording content, since you may want to have more information other than stream.
+
+    $ live-recorder --content video,chunks,m3u8 https://live.line.me/channels/12345/broadcast/12345678
+
+Specify download concurrency:
+
+    $ live-recorder --concurrent 8 https://live.line.me/channels/12345/broadcast/12345678
+
+Disable hash in generated filename:
+
+    $ live-recorder --no-hash https://live.line.me/channels/12345/broadcast/12345678
+
+### M3U8
+
+Specify interval to refetch playlist for live stream.
+
+    $ live-recorder --interval 500 https://test.com/playlist.m3u8
+
+Specify recording content, since you may want to have more information other than stream.
+
+    $ live-recorder --content merged,chunks,m3u8 https://test.com/playlist.m3u8
+
+Specify download concurrency:
+
+    $ live-recorder --concurrent 8 https://test.com/playlist.m3u8
+
+Disable hash in generated filename:
+
+    $ live-recorder --no-hash https://test.com/playlist.m3u8

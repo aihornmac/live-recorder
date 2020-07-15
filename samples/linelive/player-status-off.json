@@ -1,0 +1,42 @@
+{
+  "freeLoveCount": 0,
+  "premiumLoveCount": 542,
+  "limitedLoveCount": 274,
+  "ownedLimitedLoveCount": 0,
+  "sentLimitedLoveCount": 0,
+  "liveHLSURLs": {
+    "144": null,
+    "240": null,
+    "360": null,
+    "480": null,
+    "720": null,
+    "abr": null,
+    "aac": null
+  },
+  "archivedHLSURLs": {
+    "144": null,
+    "240": null,
+    "360": "https://lss.line-scdn.net/cc_jp/vod/hRmzk2-wpDUJXEiQlD0lzLz9KFCZ0YxlEZScRdDITVCVjcR9BfnRCcDIbByU-I0wSLCMXLDIQUXtoIkJGKXBEIWtXUiBocE1HLCY/360.m3u8",
+    "480": "https://lss.line-scdn.net/cc_jp/vod/hRmzk2-wpDUJXEiQlD0lzLz9KFCZ0YxlEZScRdDITVCVjcR9BfnRCcDIbByU-I0wSLCMXLDIQUXtoIkJGKXBEIWtXUiBocE1HLCY/480.m3u8",
+    "720": "https://lss.line-scdn.net/cc_jp/vod/hRmzk2-wpDUJXEiQlD0lzLz9KFCZ0YxlEZScRdDITVCVjcR9BfnRCcDIbByU-I0wSLCMXLDIQUXtoIkJGKXBEIWtXUiBocE1HLCY/480.m3u8",
+    "abr": "https://lss.line-scdn.net/cc_jp/vod/hRmzk2-wpDUJXEiQlD0lzLz9KFCZ0YxlEZScRdDITVCVjcR9BfnRCcDIbByU-I0wSLCMXLDIQUXtoIkJGKXBEIWtXUiBocE1HLCY/abr.m3u8",
+    "aac": "https://lss.line-scdn.net/cc_jp/vod/hRmzk2-wpDUJXEiQlD0lzLz9KFCZ0YxlEZScRdDITVCVjcR9BfnRCcDIbByU-I0wSLCMXLDIQUXtoIkJGKXBEIWtXUiBocE1HLCY/aac.m3u8"
+  },
+  "liveStatus": "FINISHED",
+  "face2face": null,
+  "apistatusCode": 200,
+  "chat": {
+    "url": null,
+    "archiveURL": "https://obs.line-scdn.net/0hBxb2JBwJHVdfSzQwAYBiAH8WGyAmZR9RfX8LYSUUFzocJgRXDXUNZC4CLWd3eFoDYSlWLXpDFmdye1MBJiwAMyhNE24g",
+    "ownerMessageURL": "https://cast-chat-api.line-apps.com/channel/14213355/owner_message/list"
+  },
+  "isFollowing": null,
+  "isOAFollowRequired": false,
+  "isChannelBlocked": false,
+  "isCollaborating": false,
+  "isCollaboratable": false,
+  "canRequestCollaboration": false,
+  "paidLive": null,
+  "subscriptionLive": null,
+  "status": 200
+}

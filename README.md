@@ -37,7 +37,7 @@ More cli options can be found in [sections of corresponding  providers](#support
 | [SHOWROOM](#showroom) | <https://www.showroom-live.com/> |
 | [AbemaTV](#abematv) | <https://abema.tv/> |
 | [radiko](#radiko) | <https://radiko.jp/> |
-| [LineLive](#livelive) | <https://live.line.me//> |
+| [LineLive](#livelive) | <https://live.line.me/> |
 | [M3U8](#m3u8) | - |
 
 ### SHOWROOM

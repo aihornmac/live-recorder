@@ -1,6 +1,6 @@
 {
   "name": "live-recorder",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "A live recoreder",
   "bin": "bin.js",
   "scripts": {

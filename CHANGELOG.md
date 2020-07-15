@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.26] - 2020-07-16
+### Added
+- [LineLive] basic support for LineLive
+- [M3U8] basic support for M3U8
+
 ## [0.0.25] - 2020-07-03
 ### Added
 - [radiko] increase default concurrency to 256

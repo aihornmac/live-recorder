@@ -38,7 +38,28 @@ More cli options can be found in [sections of corresponding  providers](#support
 | [AbemaTV](#abematv) | <https://abema.tv/> |
 | [radiko](#radiko) | <https://radiko.jp/> |
 | [LineLive](#livelive) | <https://live.line.me/> |
+| [Twitter](#twitter) | <https://twitter.com/> |
 | [M3U8](#m3u8) | - |
+
+## Tools
+
+### Merge
+
+This tool merges m2ts chunks into mp4 file
+
+    $ live-recorder tools merge /a/b/chunks /a/b/output.mp4
+
+Filter files using glob:
+
+    $ live-recorder tools merge --filter '*.ts' /a/b/chunks /a/b/output.mp4
+
+Specify starting chunk or ending chunk:
+
+    $ live-recorder tools merge --start 2.ts --end 893 /a/b/chunks /a/b/output.mp4
+
+Confirm all inquiries:
+
+    $ live-recorder tools merge -y /a/b/chunks /a/b/output.mp4
 
 ### SHOWROOM
 
@@ -103,6 +124,20 @@ Specify download concurrency:
 Disable hash in generated filename:
 
     $ live-recorder --no-hash https://live.line.me/channels/12345/broadcast/12345678
+
+### Twitter
+
+Specify recording content, since you may want to have more information other than stream.
+
+    $ live-recorder --content merged,chunks,m3u8 https://twitter.com/abcde/status/1285960853611850000
+
+Specify download concurrency:
+
+    $ live-recorder --concurrent 8 https://twitter.com/abcde/status/1285960853611850000
+
+Disable hash in generated filename:
+
+    $ live-recorder --no-hash https://twitter.com/abcde/status/1285960853611850000
 
 ### M3U8
 

@@ -7,7 +7,7 @@ import {
 import { call } from '../../utils/js'
 
 const MATCH_RADIKO_URL = (
-  `^https?://radiko.jp/#!/(?:${[
+  `^https?://radiko\\.jp/#!/(?:${[
     `live/(?<liveStationId>[^/?]+)`,
     `ts/(?<stationIdByTime>[^/?]+)/(?<startTime>[^/?]+)`,
   ].join('|')})`

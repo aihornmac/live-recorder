@@ -5,8 +5,8 @@ import {
 } from '../common/typed-input'
 import { call } from '../../utils/js'
 
-const MATCH_ABEMATV_URL = (
-  `^https?://live.line.me/(?:${[
+const MATCH_LINELIVE_URL = (
+  `^https?://live\\.line\\.me/(?:${[
     `channels/(?<channel>[0-9]+)/broadcast/(?<broadcast>[0-9]+)`,
   ].join('|')})`
 )
@@ -17,7 +17,7 @@ export type ParsedLineLiveInfo = {
 }
 
 export function parseUrl(url: URL) {
-  const match = url.toString().match(MATCH_ABEMATV_URL)
+  const match = url.toString().match(MATCH_LINELIVE_URL)
   if (!match) return failProviderMismatch('linelive')
 
   const groups = match.groups || {}

@@ -173,6 +173,7 @@ export async function exaustList<T>(
     const list = await fn(offset, limit)
     results.push(...list)
     if (list.length < limit) break
+    offset += limit
   }
   return results
 }

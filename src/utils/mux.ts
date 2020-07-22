@@ -1,7 +1,8 @@
 import * as muxjs from 'mux.js'
 import { PipeStream } from './stream'
+import { createExternalPromise } from './js'
 
-export interface MuxData<T> {
+export interface MuxData<T = unknown> {
   buffer: Buffer
   data: T
 }
@@ -21,6 +22,10 @@ export class Muxer<T> {
       this._idle.write()
       this._loop()
     })
+  }
+
+  get inputEvents() {
+    return this._input.events
   }
 
   write(input: MuxData<T>) {
@@ -71,24 +76,34 @@ export class Muxer<T> {
       const { buffer, data } = input.value
       const transmuxer = this._transmuxer
       if (!count) {
-        transmuxer.on('data', segment => {
+        transmuxer.on('data', async segment => {
           this._transmuxer.off('data')
           if (this._isDestroyed) return
           const decoded = new Uint8Array(segment.initSegment.byteLength + segment.data.byteLength)
           decoded.set(segment.initSegment, 0)
           decoded.set(segment.data, segment.initSegment.byteLength)
-          this._output.write({ buffer: Buffer.from(decoded), data })
+          const shouldWrite = this._output.write({ buffer: Buffer.from(decoded), data })
+          if (!shouldWrite) {
+            const xp = createExternalPromise()
+            this._output.events.once('drain', xp.resolve)
+            await xp.promise
+          }
           if (this._input.isEnded) {
             this._output.end()
           }
           this._idle.write()
         })
       } else {
-        transmuxer.on('data', segment => {
+        transmuxer.on('data', async segment => {
           this._transmuxer.off('data')
           if (this._isDestroyed) return
           const decoded = new Uint8Array(segment.data)
-          this._output.write({ buffer: Buffer.from(decoded), data })
+          const shouldWrite = this._output.write({ buffer: Buffer.from(decoded), data })
+          if (!shouldWrite) {
+            const xp = createExternalPromise()
+            this._output.events.once('drain', xp.resolve)
+            await xp.promise
+          }
           if (this._input.isEnded) {
             this._output.end()
           }

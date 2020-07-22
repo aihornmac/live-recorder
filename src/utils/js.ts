@@ -88,7 +88,7 @@ export function call<T>(fn: () => T) {
   return fn()
 }
 
-export function createSequancePromise<T = void>() {
+export function createSequencePromise<T = void>() {
   let prev = Promise.resolve()
   let currentCount = 0
   return function then(cb: (index: number) => MaybePromise<T>) {

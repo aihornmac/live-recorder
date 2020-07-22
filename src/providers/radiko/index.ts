@@ -8,7 +8,7 @@ import * as filenamify from 'filenamify'
 import { sample } from 'lodash'
 
 import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
-import { call, createSequancePromise, isObjectHasKey, once } from '../../utils/js'
+import { call, createSequencePromise, isObjectHasKey, once } from '../../utils/js'
 import {
   createClient,
   getProgramStreamList,
@@ -404,7 +404,7 @@ async function executeHls(options: HLSOptions) {
 
   progressBar.start()
 
-  const writeSequence = createSequancePromise()
+  const writeSequence = createSequencePromise()
 
   for await (const action of actions) {
     if (m3u8WriteStream) {

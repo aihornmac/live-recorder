@@ -1,10 +1,24 @@
 import { ExternalPromise, createExternalPromise } from './js'
+import { TypedEventEmitterListener, TypeNodeJSEventEmitter } from './types'
+import { EventEmitter } from 'events'
+
+export type PipeStreamEventMap = {
+  drain(...args: unknown[]): void
+}
 
 export class PipeStream<T> {
   protected _requests: Array<ExternalPromise<StreamResult<T>>> = []
   protected _responses: T[] = []
   protected _isEnded = false
   protected _isPaused = false
+  protected _events = new EventEmitter() as TypeNodeJSEventEmitter<PipeStreamEventMap>
+  protected _bufferSize: number
+
+  constructor(options?: {
+    readonly bufferSize?: number
+  }) {
+    this._bufferSize = formatBufferSize(options?.bufferSize)
+  }
 
   get isEnded() {
     return this._isEnded
@@ -16,6 +30,10 @@ export class PipeStream<T> {
 
   get hasWrites() {
     return this._responses.length > 0
+  }
+
+  get events(): TypedEventEmitterListener<PipeStreamEventMap> {
+    return this._events
   }
 
   end() {
@@ -38,6 +56,9 @@ export class PipeStream<T> {
         for (let i = 0; i < length; i++) {
           requests[i].resolve({ done: false, value: responses[i] })
         }
+        if (responses.length < this._bufferSize) {
+          process.nextTick(() => this._events.emit('drain'))
+        }
       }
     }
   }
@@ -57,7 +78,7 @@ export class PipeStream<T> {
       if (requests.length) {
         const xp = requests.shift()!
         xp.resolve({ done: false, value })
-        return true
+        return requests.length > 0 || this._responses.length < this._bufferSize
       }
     }
     this._responses.push(value)
@@ -69,6 +90,9 @@ export class PipeStream<T> {
       const responses = this._responses
       if (responses.length) {
         const value = responses.shift() as T
+        if (responses.length < this._bufferSize) {
+          process.nextTick(() => this._events.emit('drain'))
+        }
         return { done: false as const, value: value }
       }
     }
@@ -101,4 +125,10 @@ export type StreamResult<T> = {
 } | {
   done: true
   value: undefined
+}
+
+function formatBufferSize(value: unknown) {
+  const v = Math.ceil(Number(value))
+  if (Number.isFinite(v) && v > 0) return v
+  return 1
 }

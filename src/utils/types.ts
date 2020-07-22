@@ -1,3 +1,5 @@
+import type { EventEmitter } from 'events'
+
 export type MaybePromise<T> = T | Promise<T>
 
 export type MaybePromiseLike<T> = T | PromiseLike<T>
@@ -27,6 +29,8 @@ export interface TypedEventEmitterListener<T extends EventEmitterMapLike> {
   once<K extends keyof T>(name: K, fn: T[K]): this
   off<K extends keyof T>(name?: K, fn?: T[K]): this
 }
+
+export interface TypeNodeJSEventEmitter<T extends EventEmitterMapLike> extends Omit<EventEmitter, keyof TypedEventEmitter<T>>, TypedEventEmitter<T> {}
 
 export interface TypedEventEmitterEmitter<T extends EventEmitterMapLike> {
   emit<K extends keyof T>(name: K, ...args: Params<T[K]>): boolean

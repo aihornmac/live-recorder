@@ -7,7 +7,7 @@ import {
 import { call } from '../../utils/js'
 
 const MATCH_ABEMATV_URL = (
-  `^https?://abema.tv/(?:${[
+  `^https?://abema\\.tv/(?:${[
     `now-on-air/(?<onair>[^?]+)`,
     `video/title/(?<series>[^?]+)`,
     `video/episode/(?<episode>[^?]+)`,

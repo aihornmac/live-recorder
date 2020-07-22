@@ -8,8 +8,8 @@ import { EventEmitter } from 'events'
 import { PipeStream } from '../../utils/stream'
 import { M3UReader, M3UAction, parseProperties } from '../../utils/m3u'
 import { readlineFromBuffer } from '../../utils/readline'
-import { call, later, ExternalPromise, createExternalPromise, createSequancePromise } from '../../utils/js'
-import { ensure, niceToHave } from '../../utils/flow-control'
+import { call, later, createSequencePromise } from '../../utils/js'
+import { ensure, niceToHave, niceToHaveSync } from '../../utils/flow-control'
 import { get } from '../../utils/request'
 import { fail } from '../../utils/error'
 import { MaybePromise, TypedEventEmitter, TypedEventEmitterListener } from '../../utils/types'
@@ -17,6 +17,7 @@ import { waitForWriteStreamFinish } from '../../utils/node-stream'
 import { ProgressBar } from '../../utils/progress-bar'
 import { stringifyDuration, formatDurationInSeconds } from './helpers'
 import { Muxer } from '../../utils/mux'
+import { AbstractExecutor } from './executor'
 
 export type SequencedM3UAction = M3UAction & {
   programDateTime: number
@@ -380,6 +381,7 @@ export interface HLSExecutorOptions {
   readonly concurrency: number
   readonly actions: AsyncIterable<SequencedM3UAction> | Iterable<SequencedM3UAction>
   readonly contents: ReadonlySet<'merged' | 'chunks' | 'm3u8'>
+  readonly toMP4?: boolean
 }
 
 export type HLSEventMap = {
@@ -389,35 +391,15 @@ export type HLSEventMap = {
 
 export interface HLSEventEmitter extends Omit<EventEmitter, keyof TypedEventEmitter<HLSEventMap>>, TypedEventEmitter<HLSEventMap> {}
 
-export class HLSExecutor<TOptions extends HLSExecutorOptions = HLSExecutorOptions> {
-  private _xp = createExternalPromise<void>()
-  private _executionPromise?: Promise<void>
-  private _halt?: ExternalPromise<void> = createExternalPromise()
+export class HLSExecutor<TOptions extends HLSExecutorOptions = HLSExecutorOptions> extends AbstractExecutor {
   private _events = new EventEmitter() as HLSEventEmitter
 
-  constructor(readonly options: TOptions) {}
+  constructor(readonly options: TOptions) {
+    super()
+  }
 
   get events(): TypedEventEmitterListener<HLSEventMap> {
     return this._events
-  }
-
-  start() {
-    if (!this._halt) return
-    this._halt.resolve()
-    this._halt = undefined
-    if (!this._executionPromise) {
-      const { resolve, reject } = this._xp
-      this._executionPromise = this._execute().then(resolve, reject)
-    }
-  }
-
-  stop() {
-    if (this._halt) return
-    this._halt = createExternalPromise()
-  }
-
-  exaust() {
-    return this._xp.promise
   }
 
   protected async _downloadLicense(uri: string) {
@@ -426,7 +408,7 @@ export class HLSExecutor<TOptions extends HLSExecutorOptions = HLSExecutorOption
   }
 
   protected async _execute() {
-    const { filePath, concurrency, actions, contents, url: playListUrl } = this.options
+    const { filePath, concurrency, actions, contents, url: playListUrl, toMP4 } = this.options
 
     let decoder = defaultDecoder
 
@@ -449,56 +431,55 @@ export class HLSExecutor<TOptions extends HLSExecutorOptions = HLSExecutorOption
 
     const muxPromise = niceToHave(async () => {
       if (!mergeWriteStream) return
+      if (!toMP4) return
       for await (const { buffer, data } of muxer) {
         mergeWriteStream.write(buffer)
         this._events.emit('increase progress', data.duration)
       }
     })
 
-    const writeSequence = createSequancePromise()
+    const writeSequence = createSequencePromise()
 
     for await (const action of actions) {
       if (m3u8WriteStream) {
-        m3u8WriteStream.write(JSON.stringify(action))
-        m3u8WriteStream.write('\n')
+        niceToHaveSync(() => {
+          m3u8WriteStream.write(JSON.stringify(action))
+          m3u8WriteStream.write('\n')
+        })
       }
       if (mergeWriteStream || contents.has('chunks')) {
         if (action.kind === 'extension') {
           if (action.key === 'KEY') {
-            await concurrent.read()
-            // change key
-            const map = parseProperties(action.value)
-            const method = map.get('METHOD')
-            if (method === 'NONE') {
-              decoder = defaultDecoder
-            } else if (method === 'AES-128') {
-              const uri = map.get('URI')
-              if (!uri) throw new Error(`uri is empty`)
-              const ivInput = map.get('IV')
-              if (!ivInput) throw new Error(`iv is empty`)
-              const ivString = parseIV(ivInput) || ''
-              const iv = Buffer.from(ivString, 'hex')
-              const cipher = await ensure(() => this._downloadLicense(uri))
-              decoder = encoded => decodeAES128(encoded, cipher, iv)
-            } else {
-              throw new Error(`Unknown method ${method}, ${Array.from(map.entries()).map(([key, value]) => `${key}=${value}`).join(',')}`)
-            }
-            concurrent.write()
+            writeSequence(async () => {
+              // change key
+              const map = parseProperties(action.value)
+              const method = map.get('METHOD')
+              if (method === 'NONE') {
+                decoder = defaultDecoder
+              } else if (method === 'AES-128') {
+                const uri = map.get('URI')
+                if (!uri) throw new Error(`uri is empty`)
+                const cipher = await ensure(() => this._downloadLicense(uri))
+                const ivInput = map.get('IV')
+                const ivString = ivInput && parseIV(ivInput) || ''
+                const iv = Buffer.from(ivString, 'hex')
+                decoder = encoded => decodeAES128(encoded, cipher, iv)
+              } else {
+                throw new Error(`Unknown method ${method}, ${Array.from(map.entries()).map(([key, value]) => `${key}=${value}`).join(',')}`)
+              }
+            })
           }
         } else if (action.kind === 'track') {
           const u = new URL(action.url, playListUrl)
           const url = u.toString()
 
-          const currentDecoder = decoder
-
           this._events.emit('increase total', action.duration)
 
-          let bufferPromise = concurrent.read().then(async () => {
+          let encodedBufferPromise = concurrent.read().then(async () => {
             try {
               return await ensure(async () => {
-                const res = await get<ArrayBuffer>(url, { responseType: 'arraybuffer' })
-                const buf = Buffer.from(res.data)
-                return currentDecoder(buf)
+                const res = await get<Buffer>(url, { responseType: 'arraybuffer' })
+                return res.data
               })
             } finally {
               concurrent.write()
@@ -506,13 +487,18 @@ export class HLSExecutor<TOptions extends HLSExecutorOptions = HLSExecutorOption
           })
 
           writeSequence(async () => {
-            const buffer = await bufferPromise
+            const buffer = decoder(await encodedBufferPromise)
             if (contents.has('chunks')) {
               const ext = path.extname(u.pathname)
               await fs.promises.writeFile(path.join(chunksPath, `${action.programDateTime || action.mediaSequence}${ext}`), buffer)
             }
             if (mergeWriteStream) {
-              muxer.write({ buffer, data: { duration: action.duration } })
+              if (toMP4) {
+                muxer.write({ buffer, data: { duration: action.duration } })
+              } else {
+                mergeWriteStream.write(buffer)
+                this._events.emit('increase progress', action.duration)
+              }
             } else {
               this._events.emit('increase progress', action.duration)
             }

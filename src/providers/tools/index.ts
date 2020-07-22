@@ -71,7 +71,7 @@ async function executeMerge(list: readonly string[]) {
   const matchEnd = createFilter(options.end)
 
   const chunksPath = path.resolve(process.cwd(), commands[0])
-  const outputPath = path.resolve(chunksPath, commands[1])
+  const outputPath = path.resolve(process.cwd(), commands[1])
 
   // make sure chunks path refers to a directory
 

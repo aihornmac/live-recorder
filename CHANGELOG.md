@@ -2,8 +2,12 @@
 
 ## [0.0.27] - 2020-07-23
 ### Added
-- [LineLive] basic support for LineLive
-- [M3U8] basic support for M3U8
+- [tools] merge tool now resolve output path based on current directory
+
+## [0.0.27] - 2020-07-23
+### Added
+- [Twitter] basic support for Twitter
+- [tools] add merge tool
 
 ## [0.0.26] - 2020-07-16
 ### Added

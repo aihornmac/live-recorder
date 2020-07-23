@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.0.27] - 2020-07-23
+## [0.0.29] - 2020-07-23
+### Changed
+- change default video ext from mp4 to ts
+
+## [0.0.28] - 2020-07-23
 ### Added
 - [tools] merge tool now resolve output path based on current directory
 

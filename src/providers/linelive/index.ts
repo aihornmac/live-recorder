@@ -155,7 +155,7 @@ async function execute(options: CommonExecutionOptions & {
 
   await fs.promises.mkdir(projectPath, { recursive: true })
 
-  const filePath = path.join(projectPath, 'merged.mp4')
+  const filePath = path.join(projectPath, 'merged.ts')
 
   const progressBar = createHLSProgressBar()
 

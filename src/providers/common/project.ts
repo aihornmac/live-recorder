@@ -234,7 +234,7 @@ export class HLSProject {
     if (!ids.length) return
     const minId = Math.min(...ids)
     const maxId = Math.max(...ids)
-    const outputFilePath = path.join(path.resolve(process.cwd(), this._root), 'output.mp4')
+    const outputFilePath = path.join(path.resolve(process.cwd(), this._root), 'output.ts')
     const chunksPath = path.resolve(process.cwd(), this._chunksPath)
     const writeStream = fs.createWriteStream(outputFilePath)
     const readStream = Readable.from(call(async function *() {

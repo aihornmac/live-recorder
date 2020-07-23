@@ -132,7 +132,7 @@ async function execute(options: CommonExecutionOptions & {
 
   playLists.push({
     url: new URL(pickedStream.url, streamListUrl).toString(),
-    filePath: path.join(projectPath, 'video.mp4'),
+    filePath: path.join(projectPath, 'video.ts'),
   })
 
   const audioUrl = pickedStream.data.AUDIO

@@ -11,6 +11,7 @@ import { confirm } from '../../utils/prompt'
 import { call } from '../../utils/js'
 import { ProgressBar } from '../../utils/progress-bar'
 import { Merge } from './merge'
+import { MergeTransmux } from './merge-transmux'
 
 export async function commands(list: readonly string[]) {
   const command = list[0] || ''
@@ -46,6 +47,10 @@ async function executeMerge(list: readonly string[]) {
       })
       .option({
         name: 'yes',
+        type: 'boolean',
+      })
+      .option({
+        name: 'transmux',
         type: 'boolean',
       })
       .alias('h', 'help')
@@ -175,11 +180,19 @@ async function executeMerge(list: readonly string[]) {
 
   progressBar.start()
 
-  const mergeExecution = new Merge({
-    outputPath,
-    chunksPath,
-    fileNames: fileNamesSlice,
-  })
+  const mergeExecution = options.transmux ? (
+    new MergeTransmux({
+      outputPath,
+      chunksPath,
+      fileNames: fileNamesSlice,
+    })
+  ) : (
+    new Merge({
+      outputPath,
+      chunksPath,
+      fileNames: fileNamesSlice,
+    })
+  )
 
   mergeExecution.events.on('increase progress', value => progressBar.increaseValue(value))
   mergeExecution.events.on('increase total', value => progressBar.increaseTotal(value))

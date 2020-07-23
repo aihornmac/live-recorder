@@ -239,7 +239,7 @@ async function executeEpisode(options: CommonExecutionOptions & {
   const fileTitle = title ? filenamify(title, { replacement: '-' }) : ''
   const fileHash = fileTitle && !ensureUnique ? '' : format(new Date(), 'yyyyLLddHHmmss')
   const fileName = [fileTitle, fileHash].filter(Boolean).join('.')
-  const filePath = path.join(folderPath, fileName, 'video.mp4')
+  const filePath = path.join(folderPath, fileName, 'video.ts')
 
   console.log(`writing to ${filePath}`)
 
@@ -289,7 +289,7 @@ async function executeOnair(options: CommonExecutionOptions & {
   const fileTitle = title ? filenamify(title, { replacement: '-' }) : ''
   const fileHash = fileTitle && !ensureUnique ? '' : format(new Date(), 'yyyyLLddHHmmss')
   const fileName = [fileTitle, fileHash].filter(Boolean).join('.')
-  const filePath = path.join(folderPath, fileName, 'video.mp4')
+  const filePath = path.join(folderPath, fileName, 'video.ts')
 
   console.log(`writing to ${filePath}`)
 
@@ -384,7 +384,7 @@ async function executeSlot(options: CommonExecutionOptions & {
   const fileTitle = title ? filenamify(title, { replacement: '-' }) : ''
   const fileHash = fileTitle && !ensureUnique ? '' : format(new Date(), 'yyyyLLddHHmmss')
   const fileName = [fileTitle, fileHash].filter(Boolean).join('.')
-  const filePath = path.join(folderPath, fileName, 'video.mp4')
+  const filePath = path.join(folderPath, fileName, 'video.ts')
 
   console.log(`writing to ${filePath}`)
 

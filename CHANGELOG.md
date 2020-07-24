@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.30] - 2020-07-25
+### Added
+- [AbemaTV] add `info` in cli option --content to download detailed information
+- [M3U8] add support for both streamlist and playlist
+- [M3U8] add support for subtitles download
+- [tools] add download tool
+
+### Fixed
+- [AbemaTV] fix not-aligned error due to lack of padding when decode buffer in aes
+- [AbemaTV] fix unguarded network request
+
 ## [0.0.29] - 2020-07-23
 ### Changed
 - change default video ext from mp4 to ts

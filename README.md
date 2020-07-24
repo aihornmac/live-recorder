@@ -61,6 +61,16 @@ Confirm all inquiries:
 
     $ live-recorder tools merge -y /a/b/chunks /a/b/output.mp4
 
+### Download
+
+This tool downloads file
+
+    $ live-recorder tools download https://abc.com/example.ts
+
+Specify output:
+
+    $ live-recorder tools download https://abc.com/example.ts -o test.ts
+
 ### SHOWROOM
 
 Record live chat:
@@ -71,7 +81,7 @@ Record live chat:
 
 Specify recording content, since you may want to have more information other than stream.
 
-    $ live-recorder --content video,chunks,m3u8 https://abema.tv/channels/special-plus/slots/CVRwLESD4GsvQw
+    $ live-recorder --content video,chunks,m3u8,info https://abema.tv/channels/special-plus/slots/CVRwLESD4GsvQw
 
 Specify user token:
 

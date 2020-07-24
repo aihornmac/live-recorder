@@ -40,6 +40,7 @@ import {
   HLSExecutor,
   HLSExecutorOptions,
   createHLSProgressBar,
+  HLSContentType,
 } from '../common/hls'
 
 const PROVIDER = 'abematv'
@@ -213,6 +214,7 @@ export function match(url: URL) {
 type ContentType = (
   | 'video'
   | 'chunks'
+  | 'info'
   | 'm3u8'
 )
 
@@ -239,33 +241,50 @@ async function executeEpisode(options: CommonExecutionOptions & {
   const fileTitle = title ? filenamify(title, { replacement: '-' }) : ''
   const fileHash = fileTitle && !ensureUnique ? '' : format(new Date(), 'yyyyLLddHHmmss')
   const fileName = [fileTitle, fileHash].filter(Boolean).join('.')
-  const filePath = path.join(folderPath, fileName, 'video.ts')
+  const projectPath = path.join(folderPath, fileName)
 
-  console.log(`writing to ${filePath}`)
+  console.log(`writing to ${projectPath}`)
 
-  await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
-
-  const playListUrl = await getStream({
-    url: streamListUrl,
-    usertoken: undefined,
+  const writeInfoPromise = call(async () => {
+    if (contents.has('info')) {
+      const filePath = path.join(projectPath, 'info.json')
+      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+      await fs.promises.writeFile(filePath, JSON.stringify(episodeInfo, null, 2))
+    }
   })
 
-  if (!playListUrl) return
+  const hlsPromise = call(async () => {
+    const hlsContents = toHLSContent(contents)
+    if (!hlsContents.size) return
 
-  const { actions } = loopPlayList({
-    getPlayList: playListUrl.toString(),
-    interval: 5000,
+    const filePath = path.join(projectPath, 'video.ts')
+
+    const playListUrl = await getStream({
+      url: streamListUrl,
+      usertoken: undefined,
+    })
+
+    if (!playListUrl) return
+
+    const { actions } = loopPlayList({
+      getPlayList: playListUrl.toString(),
+      interval: 5000,
+    })
+
+    await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+
+    await executeHls({
+      url: playListUrl,
+      filePath,
+      concurrency,
+      actions,
+      usertoken,
+      deviceId,
+      contents: hlsContents,
+    })
   })
 
-  await executeHls({
-    url: playListUrl,
-    filePath,
-    concurrency,
-    actions,
-    usertoken,
-    deviceId,
-    contents,
-  })
+  await Promise.all([writeInfoPromise, hlsPromise])
 }
 
 async function executeOnair(options: CommonExecutionOptions & {
@@ -289,40 +308,57 @@ async function executeOnair(options: CommonExecutionOptions & {
   const fileTitle = title ? filenamify(title, { replacement: '-' }) : ''
   const fileHash = fileTitle && !ensureUnique ? '' : format(new Date(), 'yyyyLLddHHmmss')
   const fileName = [fileTitle, fileHash].filter(Boolean).join('.')
-  const filePath = path.join(folderPath, fileName, 'video.ts')
+  const projectPath = path.join(folderPath, fileName)
 
-  console.log(`writing to ${filePath}`)
+  console.log(`writing to ${projectPath}`)
 
-  await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
-
-  const playListUrl = await getStream({
-    url: streamListUrl,
-    usertoken: undefined,
+  const writeInfoPromise = call(async () => {
+    if (contents.has('info')) {
+      const filePath = path.join(projectPath, 'info.json')
+      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+      await fs.promises.writeFile(filePath, JSON.stringify(channel, null, 2))
+    }
   })
 
-  if (!playListUrl) return
+  const hlsPromise = call(async () => {
+    const hlsContents = toHLSContent(contents)
+    if (!hlsContents.size) return
 
-  const { actions } = loopPlayList({
-    getPlayList: playListUrl.toString(),
-    interval: 5000,
+    const filePath = path.join(projectPath, 'video.ts')
+
+    await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+
+    const playListUrl = await getStream({
+      url: streamListUrl,
+      usertoken: undefined,
+    })
+
+    if (!playListUrl) return
+
+    const { actions } = loopPlayList({
+      getPlayList: playListUrl.toString(),
+      interval: 5000,
+    })
+
+    await executeHls({
+      url: playListUrl,
+      filePath,
+      concurrency,
+      actions,
+      usertoken,
+      deviceId,
+      contents: hlsContents,
+    })
   })
 
-  await executeHls({
-    url: playListUrl,
-    filePath,
-    concurrency,
-    actions,
-    usertoken,
-    deviceId,
-    contents,
-  })
+  await Promise.all([writeInfoPromise, hlsPromise])
 }
 
 async function executeSeries(options: CommonExecutionOptions & {
   readonly seriesId: string
   readonly seasonId: string | undefined
 }) {
-  const { folderPath, token, seriesId, seasonId, ensureUnique } = options
+  const { folderPath, token, seriesId, seasonId, ensureUnique, contents } = options
 
   const { usertoken } = await getUserData(token)
 
@@ -343,30 +379,42 @@ async function executeSeries(options: CommonExecutionOptions & {
 
   console.log(`writing to ${projectPath}`)
 
-  await fs.promises.mkdir(projectPath, { recursive: true })
-
-  for (const season of seasons) {
-    const seasonPath = path.join(projectPath, filenamify(season.name, { replacement: '-' }))
-    const list = await exaustList(40, async (offset, limit) => {
-      const result = await ensure(() =>
-        getVideoSeriesProgramsInfo(usertoken, seriesInfo.id, seriesInfo.version, season.id, {
-          offset,
-          limit,
-        })
-      )
-      return result.programs
-    })
-    for (const item of list) {
-      console.log(chalk.greenBright(`${season.name}    ${item.episode.title}`))
-      await executeEpisode({
-        ...options,
-        folderPath: seasonPath,
-        token: usertoken,
-        episodeId: item.id,
-        ensureUnique: false,
-      })
+  const writeInfoPromise = call(async () => {
+    if (contents.has('info')) {
+      const filePath = path.join(projectPath, 'info.json')
+      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+      await fs.promises.writeFile(filePath, JSON.stringify(seriesInfo, null, 2))
     }
-  }
+  })
+
+  const seasonsPromise = call(async () => {
+    await fs.promises.mkdir(projectPath, { recursive: true })
+
+    for (const season of seasons) {
+      const seasonPath = path.join(projectPath, filenamify(season.name, { replacement: '-' }))
+      const list = await exaustList(40, async (offset, limit) => {
+        const result = await ensure(() =>
+          getVideoSeriesProgramsInfo(usertoken, seriesInfo.id, seriesInfo.version, season.id, {
+            offset,
+            limit,
+          })
+        )
+        return result.programs
+      })
+      for (const item of list) {
+        console.log(chalk.greenBright(`${season.name}    ${item.episode.title}`))
+        await executeEpisode({
+          ...options,
+          folderPath: seasonPath,
+          token: usertoken,
+          episodeId: item.id,
+          ensureUnique: false,
+        })
+      }
+    }
+  })
+
+  await Promise.all([writeInfoPromise, seasonsPromise])
 }
 
 async function executeSlot(options: CommonExecutionOptions & {
@@ -384,55 +432,71 @@ async function executeSlot(options: CommonExecutionOptions & {
   const fileTitle = title ? filenamify(title, { replacement: '-' }) : ''
   const fileHash = fileTitle && !ensureUnique ? '' : format(new Date(), 'yyyyLLddHHmmss')
   const fileName = [fileTitle, fileHash].filter(Boolean).join('.')
-  const filePath = path.join(folderPath, fileName, 'video.ts')
+  const projectPath = path.join(folderPath, fileName)
 
-  console.log(`writing to ${filePath}`)
+  console.log(`writing to ${projectPath}`)
 
-  await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
-
-  const endAt = slotInfo.endAt * 1000
-
-  const { type, getStreamListUrl } = await call(async () => {
-    const now = Date.now()
-    if (inputType === 'chase' || !inputType && endAt > now) {
-      return {
-        type: 'chase' as const,
-        getStreamListUrl: () => getSlotChaseStreamListUrl(slotId),
-      }
-    } else {
-      if (endAt > Date.now()) {
-        throw fail(`when slot is not ended, can only get chase list`)
-      }
-      return {
-        type: 'vod' as const,
-        getStreamListUrl: () => getSlotVodStreamListUrl(slotId),
-      }
+  const writeInfoPromise = call(async () => {
+    if (contents.has('info')) {
+      const filePath = path.join(projectPath, 'info.json')
+      await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+      await fs.promises.writeFile(filePath, JSON.stringify(slotInfo, null, 2))
     }
   })
 
-  console.log(`event mode: ${type}`)
+  const hlsPromise = call(async () => {
+    const hlsContents = toHLSContent(contents)
+    if (!hlsContents.size) return
 
-  const playListUrl = await getStream({
-    url: getStreamListUrl(),
-    usertoken,
+    const filePath = path.join(projectPath, 'video.ts')
+    await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+
+    const endAt = slotInfo.endAt * 1000
+
+    const { type, getStreamListUrl } = await call(async () => {
+      const now = Date.now()
+      if (inputType === 'chase' || !inputType && endAt > now) {
+        return {
+          type: 'chase' as const,
+          getStreamListUrl: () => getSlotChaseStreamListUrl(slotId),
+        }
+      } else {
+        if (endAt > Date.now()) {
+          throw fail(`when slot is not ended, can only get chase list`)
+        }
+        return {
+          type: 'vod' as const,
+          getStreamListUrl: () => getSlotVodStreamListUrl(slotId),
+        }
+      }
+    })
+
+    console.log(`event mode: ${type}`)
+
+    const playListUrl = await getStream({
+      url: getStreamListUrl(),
+      usertoken,
+    })
+
+    if (!playListUrl) return
+
+    const { actions } = loopPlayList({
+      getPlayList: playListUrl.toString(),
+      interval: 5000,
+    })
+
+    await executeHls({
+      url: playListUrl,
+      filePath,
+      concurrency,
+      actions,
+      usertoken,
+      deviceId,
+      contents: hlsContents,
+    })
   })
 
-  if (!playListUrl) return
-
-  const { actions } = loopPlayList({
-    getPlayList: playListUrl.toString(),
-    interval: 5000,
-  })
-
-  await executeHls({
-    url: playListUrl,
-    filePath,
-    concurrency,
-    actions,
-    usertoken,
-    deviceId,
-    contents,
-  })
+  await Promise.all([writeInfoPromise, hlsPromise])
 }
 
 async function getStream(options: {
@@ -440,7 +504,7 @@ async function getStream(options: {
   readonly usertoken: string | undefined
 }) {
   const { url, usertoken } = options
-  const content = await getAnyPlaylist(url, usertoken)
+  const content = await ensure(() => getAnyPlaylist(url, usertoken))
 
   const streams = await parseStreamList({
     content,
@@ -482,8 +546,8 @@ class AbemaTVHLSExecutor extends HLSExecutor<AbemaTVHLSExecutorOptions> {
     const ticket = parseTicket(uri)
     if (!ticket) throw new Error(`Failed to parse ticket`)
     const { usertoken, deviceId } = this.options
-    const mediaToken = await getMediaToken(usertoken)
-    const license = await getHLSLicenseFromTicket(mediaToken, ticket)
+    const mediaToken = await ensure(() => getMediaToken(usertoken))
+    const license = await ensure(() => getHLSLicenseFromTicket(mediaToken, ticket))
     const encodedVideoKey = readEncodedVideoKey(license.k)
     return getVideoKeyFromHLSLicense(deviceId, license.cid, encodedVideoKey)
   }
@@ -496,9 +560,11 @@ async function executeHls(options: {
   readonly actions: AsyncIterable<SequencedM3UAction> | Iterable<SequencedM3UAction>,
   readonly usertoken: string
   readonly deviceId: string
-  readonly contents: ReadonlySet<ContentType>
+  readonly contents: ReadonlySet<HLSContentType>
 }) {
   const { url, filePath, concurrency, actions, usertoken, deviceId, contents } = options
+
+  if (!contents.size) return
 
   const progressBar = createHLSProgressBar()
 
@@ -511,7 +577,7 @@ async function executeHls(options: {
     deviceId,
     concurrency,
     actions,
-    contents: new Set(Array.from(contents).map(content => content === 'video' ? 'merged' : content)),
+    contents,
   })
 
   hls.events.on('increase progress', value => progressBar.increaseValue(value))
@@ -544,9 +610,24 @@ function formatConcurrent(x: unknown) {
 function formatContent(x: string) {
   const parts: Array<ContentType> = []
   for (const part of x.split(/[^a-zA-Z0-9-]/)) {
-    if (part === 'video' || part === 'm3u8' || part === 'chunks') {
+    if (part === 'video' || part === 'm3u8' || part === 'chunks' || part === 'info') {
       parts.push(part)
+    } else {
+      console.warn(`unknown content ${chalk.yellowBright(part)}`)
     }
   }
   return new Set(parts)
+}
+
+function toHLSContent(contents: ReadonlySet<ContentType>): Set<HLSContentType> {
+  return new Set(Array.from(call(function*() {
+    for (const content of contents) {
+      if (content === 'info') continue
+      if (content === 'video') {
+        yield 'merged'
+      } else {
+        yield content
+      }
+    }
+  })))
 }

@@ -8,16 +8,20 @@ import { argv } from '../../utils/argv'
 import { fail } from '../../utils/error'
 import { exists } from '../../utils/fs'
 import { confirm } from '../../utils/prompt'
-import { call } from '../../utils/js'
+import { call, createExternalPromise } from '../../utils/js'
 import { ProgressBar } from '../../utils/progress-bar'
 import { Merge } from './merge'
 import { MergeTransmux } from './merge-transmux'
+import Axios from 'axios'
 
 export async function commands(list: readonly string[]) {
   const command = list[0] || ''
   const rest = list.slice(1)
   if (command === 'merge') {
     return executeMerge(rest)
+  }
+  if (command === 'download') {
+    return executeDownload(rest)
   }
 }
 
@@ -175,7 +179,7 @@ async function executeMerge(list: readonly string[]) {
 
   const progressBar = new ProgressBar({
     smooth: 100,
-    freshRate: 5,
+    freshRate: 1,
   })
 
   progressBar.start()
@@ -200,6 +204,77 @@ async function executeMerge(list: readonly string[]) {
   mergeExecution.start()
 
   await mergeExecution.exaust()
+
+  progressBar.stop()
+}
+
+async function executeDownload(list: readonly string[]) {
+  const parsed = (
+    argv()
+      .onlyDefinedOptions()
+      .option({
+        name: 'help',
+        type: 'boolean',
+      })
+      .option({
+        name: 'output',
+        type: 'string',
+      })
+      .alias('h', 'help')
+      .alias('o', 'output')
+      .parseOrExit(list)
+  )
+
+  const { options } = parsed
+
+  if (options.help) {
+    console.log(chalk.greenBright(`tools stream <url>`))
+    return
+  }
+
+  const { commands } = parsed
+
+  const url = commands[0] || ''
+
+  if (!url) {
+    throw fail(chalk.redBright(`Expect <url>`))
+  }
+
+  const outputPath = path.resolve(process.cwd(), options.output || `${Date.now()}.ts`)
+
+  console.log(`writing to ${outputPath}`)
+
+  await fs.promises.mkdir(path.dirname(outputPath), { recursive: true })
+
+  const writeStream = fs.createWriteStream(outputPath)
+
+  const res = await Axios.get<NodeJS.ReadableStream>(url, { responseType: 'stream' })
+
+
+  const progressBar = new ProgressBar({
+    smooth: 100,
+    freshRate: 5,
+    formatValue: (value, _, type) => {
+      if (type === 'value' || type === 'total') {
+        return `${(+value).toFixed(2)}MB`
+      }
+      return value
+    }
+  })
+
+  progressBar.start()
+
+  for await (const buffer of res.data) {
+    const shouldWriteMore = writeStream.write(buffer)
+    const size = buffer.length / 1048576
+    progressBar.increaseValue(size)
+    progressBar.increaseTotal(size)
+    if (!shouldWriteMore) {
+      const xp = createExternalPromise()
+      writeStream.once('drain', xp.resolve)
+      await xp.promise
+    }
+  }
 
   progressBar.stop()
 }

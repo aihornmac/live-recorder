@@ -66,7 +66,12 @@ export function readEncodedVideoKey(k: string) {
   for (let i = 0; i < length; i++) {
     s += BigInt(LICENSE_CHAR_INDEX_MAP[k[i]]) * BigInt(58) ** BigInt(length - 1 - i)
   }
-  return bigintToBuffer(s)
+  const buf = bigintToBuffer(s)
+  const remainder = buf.length % 16
+  if (remainder) {
+    return Buffer.concat([Buffer.alloc(16 - remainder), buf])
+  }
+  return buf
 }
 
 export function getVideoKeyFromHLSLicense(

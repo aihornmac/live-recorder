@@ -9,7 +9,7 @@ import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
 import { ensure } from '../../utils/flow-control'
 import { get } from '../../utils/request'
 import { parseUrl } from './dispatch'
-import { loopPlayList, parseStreamList, parseBandwidth, pickStream, printStreamChoices, HLSExecutor, createHLSProgressBar } from '../common/hls'
+import { loopPlayList, parseStreamList, parseBandwidth, pickStream, printStreamChoices, HLSExecutor, createHLSProgressBar, determineM3U8Type } from '../common/hls'
 
 const DEFAULT_CONCURRENT = 8
 
@@ -112,35 +112,53 @@ async function execute(options: CommonExecutionOptions & {
     return res.data
   })
 
-  const streamList = await parseStreamList({
-    content: streamListContent,
-    parser: {
-      BANDWIDTH: parseBandwidth,
-    },
-  })
-
-  if (!streamList.length) {
-    console.error(chalk.redBright(`No stream found`))
-    return
-  }
-
-  const pickedStream = pickStream(streamList, 'best')!
-
-  printStreamChoices(streamList, pickedStream)
+  const m3u8Type = await determineM3U8Type(streamListContent)
 
   const playLists: Array<{ url: string, filePath: string }> = []
 
-  playLists.push({
-    url: new URL(pickedStream.url, streamListUrl).toString(),
-    filePath: path.join(projectPath, 'video.ts'),
-  })
+  if (m3u8Type === 'stream') {
+    const streamList = await parseStreamList({
+      content: streamListContent,
+      parser: {
+        BANDWIDTH: parseBandwidth,
+      },
+    })
 
-  const audioUrl = pickedStream.data.AUDIO
+    if (!streamList.length) {
+      console.error(chalk.redBright(`No stream found`))
+      return
+    }
 
-  if (typeof audioUrl === 'string') {
+    const pickedStream = pickStream(streamList, 'best')!
+
+    printStreamChoices(streamList, pickedStream)
+
     playLists.push({
-      url: new URL(audioUrl, streamListUrl).toString(),
-      filePath: path.join(projectPath, 'audio.aac'),
+      url: new URL(pickedStream.url, streamListUrl).toString(),
+      filePath: path.join(projectPath, 'video.ts'),
+    })
+
+    const audioUrl = pickedStream.audio?.uri
+
+    if (typeof audioUrl === 'string') {
+      playLists.push({
+        url: new URL(audioUrl, streamListUrl).toString(),
+        filePath: path.join(projectPath, 'audio.aac'),
+      })
+    }
+
+    const subtitlesUrl = pickedStream.subtitles?.uri
+
+    if (typeof subtitlesUrl === 'string') {
+      playLists.push({
+        url: new URL(subtitlesUrl, streamListUrl).toString(),
+        filePath: path.join(projectPath, 'subtitiles'),
+      })
+    }
+  } else {
+    playLists.push({
+      url: streamListUrl,
+      filePath: path.join(projectPath, 'stream.ts'),
     })
   }
 

@@ -8,11 +8,11 @@ import { EventEmitter } from 'events'
 import { PipeStream } from '../../utils/stream'
 import { M3UReader, M3UAction, parseProperties } from '../../utils/m3u'
 import { readlineFromBuffer } from '../../utils/readline'
-import { call, later, createSequencePromise } from '../../utils/js'
+import { call, later, createSequencePromise, keysOf, isInSet, entriesOf, mapValues } from '../../utils/js'
 import { ensure, niceToHave, niceToHaveSync } from '../../utils/flow-control'
 import { get } from '../../utils/request'
 import { fail } from '../../utils/error'
-import { MaybePromise, TypedEventEmitter, TypedEventEmitterListener } from '../../utils/types'
+import { MaybePromise, TypedEventEmitter, TypedEventEmitterListener, ValuesToEnum, ValuesOf } from '../../utils/types'
 import { waitForWriteStreamFinish } from '../../utils/node-stream'
 import { ProgressBar } from '../../utils/progress-bar'
 import { stringifyDuration, formatDurationInSeconds } from './helpers'
@@ -125,18 +125,55 @@ export function loopPlayList(options: {
   }
 }
 
-export type StreamMediaType = (
-  | 'AUDIO'
-  | 'VIDEO'
-  | 'SUBTITLES'
-  | 'CLOSED-CAPTIONS'
-)
+export const STREAM_MEDIA_TYPES = call((): ReadonlySet<StreamMediaType> => {
+  const map: ValuesToEnum<StreamMediaType> = {
+    'AUDIO': 'AUDIO',
+    'VIDEO': 'VIDEO',
+    'SUBTITLES': 'SUBTITLES',
+    'CLOSED-CAPTIONS': 'CLOSED-CAPTIONS',
+  }
+  return new Set(keysOf(map))
+})
+
+export const WellKnownMediaPropertyNames = {
+  groupId: 'GROUP-ID',
+  language: 'LANGUAGE',
+  name: 'NAME',
+  autoselect: 'AUTOSELECT',
+  default: 'DEFAULT',
+  instreamId: 'INSTREAM-ID',
+  assocLanguage: 'ASSOC-LANGUAGE',
+  channels: 'CHANNELS',
+  uri: 'URI',
+} as const
+
+export const WellKnownStreamPropertyNames = {
+  video: 'VIDEO',
+  audio: 'AUDIO',
+  subtitles: 'SUBTITLES',
+  closedCaptions: 'CLOSED-CAPTIONS',
+} as const
+
+export type StreamMediaType = ValuesOf<typeof WellKnownStreamPropertyNames>
 
 export type StreamMedia = {
   type: StreamMediaType
+} & {
+  -readonly [P in keyof typeof WellKnownMediaPropertyNames]: string
+}
+
+export type Stream<M extends { [key: string]: unknown } = { [key: string]: string }> = {
   url: string
-  groupId: string
-  name: string
+  video?: StreamMedia
+  audio?: StreamMedia
+  subtitles?: StreamMedia
+  closedCaptions?: StreamMedia
+  bandwidth?: number
+  resolution?: {
+    width: number
+    height: number
+  }
+  data: M
 }
 
 type ParserMapLike = { readonly [key: string]: (value: string) => unknown }
@@ -145,23 +182,30 @@ type ParsedMapOf<M> = {
   -readonly [P in keyof M]: M[P] extends (value: string) => infer R ? R : never
 }
 
+// @see https://developer.apple.com/documentation/http_live_streaming/example_playlists_for_http_live_streaming/adding_alternate_media_to_a_playlist
+
+export async function determineM3U8Type(content: string) {
+  const reader = new M3UReader()
+  for await (const line of readlineFromBuffer(content)) {
+    const action = reader.push(line)
+    if (!action) continue
+    if (action.kind === 'stream') return 'stream'
+    if (action.kind === 'track') return 'track'
+  }
+  return 'stream'
+}
+
 export async function parseStreamList(
   options: {
     readonly content: string
   }
-): Promise<Array<{
-  url: string
-  data: { [key: string]: string }
-}>>
+): Promise<Stream[]>
 export async function parseStreamList<M extends ParserMapLike = {}>(
   options: {
     readonly content: string
     readonly parser: M
   }
-): Promise<Array<{
-  url: string
-  data: { [key: string]: string } & ParsedMapOf<M>
-}>>
+): Promise<Array<Stream<{ [key: string]: string } & ParsedMapOf<M>>>>
 export async function parseStreamList<M extends ParserMapLike = {}>(
   options: {
     readonly content: string
@@ -172,11 +216,7 @@ export async function parseStreamList<M extends ParserMapLike = {}>(
 
   const media: StreamMedia[] = []
 
-  const streams: Array<{
-    url: string
-    audio?: string
-    data: { [key: string]: unknown }
-  }> = []
+  const streams: Array<Stream<{ [key: string]: unknown }>> = []
 
   const reader = new M3UReader()
 
@@ -188,11 +228,12 @@ export async function parseStreamList<M extends ParserMapLike = {}>(
     if (action.kind === 'extension') {
       if (action.key === 'MEDIA') {
         const map = parseProperties(action.value)
+        const type = map.get('TYPE')
+        if (!isInSet(STREAM_MEDIA_TYPES, type)) continue
+        const properties = mapValues(WellKnownMediaPropertyNames, propertyKey =>  map.get(propertyKey) || '')
         media.push({
-          type: map.get('TYPE') as StreamMediaType,
-          url: map.get('URI') as string,
-          groupId: map.get('GROUP-ID') as string,
-          name: map.get('NAME') as string,
+          ...properties,
+          type,
         })
       }
     } else if (action.kind === 'stream') {
@@ -216,18 +257,28 @@ export async function parseStreamList<M extends ParserMapLike = {}>(
     }
   }
 
-  const audios = new Map(media.filter(x => x.type === 'AUDIO').map(x => [x.groupId, x]))
+  const mediaByType = new Map<StreamMediaType, Map<string, StreamMedia>>()
+  for (const medium of media) {
+    let map = mediaByType.get(medium.type)
+    if (!map) mediaByType.set(medium.type, map = new Map())
+    map.set(medium.groupId, medium)
+  }
 
   for (const stream of streams) {
     const { data } = stream
-    if (typeof data.AUDIO === 'string') {
-      const audio = audios.get(data.AUDIO)
-      if (audio) {
-        data.AUDIO = audio.url
-        continue
+    for (const [key, propertyName] of entriesOf(WellKnownStreamPropertyNames)) {
+      const map = mediaByType.get(propertyName)
+      if (map) {
+        const groupId = data[propertyName]
+        if (typeof groupId === 'string' && groupId !== 'NONE') {
+          const medium = map.get(groupId)
+          if (medium) {
+            stream[key] = medium
+          }
+        }
       }
+      delete data[propertyName]
     }
-    delete data.AUDIO
   }
 
   return streams
@@ -380,7 +431,7 @@ export interface HLSExecutorOptions {
   readonly filePath: string
   readonly concurrency: number
   readonly actions: AsyncIterable<SequencedM3UAction> | Iterable<SequencedM3UAction>
-  readonly contents: ReadonlySet<'merged' | 'chunks' | 'm3u8'>
+  readonly contents: ReadonlySet<HLSContentType>
   readonly toMP4?: boolean
 }
 

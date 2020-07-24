@@ -157,3 +157,19 @@ export function stripValue<T>(x: T, v: unknown, deep = false): T {
   }
   return x
 }
+
+export function isInSet<T>(set: ReadonlySet<T>, value: unknown): value is T
+export function isInSet(set: ReadonlySet<unknown>, value: unknown) {
+  return set.has(value)
+}
+
+export function mapValues<T extends { [key: string]: unknown }, R = T[keyof T]>(
+  map: T,
+  fn: (value: T[keyof T], key: keyof T, map: T) => R,
+) {
+  const result = {} as { -readonly [P in keyof T]: R }
+  for (const key of keysOf(map)) {
+    result[key] = fn(map[key], key, map)
+  }
+  return result
+}

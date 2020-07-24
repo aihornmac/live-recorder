@@ -37,3 +37,7 @@ export interface TypedEventEmitterEmitter<T extends EventEmitterMapLike> {
 }
 
 export type Params<T extends Function> = T extends (...args: infer A) => infer _R ? A : unknown[]
+
+export type ValuesToEnum<T extends string> = { readonly [P in T]: P }
+
+export type ValuesOf<T> = T[keyof T]

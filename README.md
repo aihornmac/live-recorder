@@ -61,6 +61,10 @@ Confirm all inquiries:
 
     $ live-recorder tools merge -y /a/b/chunks /a/b/output.mp4
 
+dry run:
+
+    $ live-recorder tools merge --dry /a/b/chunks /a/b/output.mp4
+
 ### Download
 
 This tool downloads file

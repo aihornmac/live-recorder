@@ -50,6 +50,10 @@ async function executeMerge(list: readonly string[]) {
         type: 'string',
       })
       .option({
+        name: 'dry',
+        type: 'boolean',
+      })
+      .option({
         name: 'yes',
         type: 'boolean',
       })
@@ -65,7 +69,7 @@ async function executeMerge(list: readonly string[]) {
   const { options } = parsed
 
   if (options.help) {
-    console.log(chalk.greenBright(`tools merge <chunks path> <output file path>`))
+    console.log(chalk.greenBright(`tools merge <chunks path> <output file path> (--yes) (--start <start glob or id>) (--end <end glob or id>)`))
     return
   }
 
@@ -160,7 +164,19 @@ async function executeMerge(list: readonly string[]) {
 
   const startFileName = fileNamesSlice[0]
   const endFileName = fileNamesSlice[fileNamesSlice.length - 1]
-  console.log(`merge from ${JSON.stringify(startFileName)} to ${JSON.stringify(endFileName)}`)
+  console.log(`merge from ${JSON.stringify(startFileName)} to ${JSON.stringify(endFileName)} (${fileNamesSlice.length} files)`)
+
+  if (areFileNamesNumeric) {
+    const minId = fileNameToIdMap.get(startFileName)!
+    const maxId = fileNameToIdMap.get(endFileName)!
+    if (maxId - minId + 1 > fileNamesSlice.length) {
+      for (let id = minId; id <= maxId; id++) {
+        if (!idToFileNameMap.has(id)) {
+          console.log(chalk.yellowBright(`Missing id ${id}`))
+        }
+      }
+    }
+  }
 
   // make sure output path is writable
 
@@ -174,6 +190,8 @@ async function executeMerge(list: readonly string[]) {
       if (!shouldOverride) return
     }
   }
+
+  if (options.dry) return
 
   // merge chunks
 

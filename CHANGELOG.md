@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.31] - 2020-08-15
+### Added
+- [tools] add merge tool options `--dry` to enable dry run
+- [tools] merge tool now supports numeric files
+
 ## [0.0.30] - 2020-07-25
 ### Added
 - [AbemaTV] add `info` in cli option --content to download detailed information

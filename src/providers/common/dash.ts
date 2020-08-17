@@ -335,6 +335,12 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
       return getOrCreate
     })
 
+    const getOrCreateWriteSquence = createMapMapper((_id: string) => {
+      const pipe = new PipeStream<void>()
+      pipe.write()
+      return pipe
+    })
+
     const streams = new Map<string, {
       readonly mimeType: string
       readonly fileName: string
@@ -358,6 +364,8 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
             fileName: `${action.representationId}${path.extname(pathname)}`
           })
         }
+        const writeSequence = getOrCreateWriteSquence(action.representationId)
+        const waitForWrite = writeSequence.read()
         promises.push(
           niceToHave(async () => {
             const representationFolderPath = path.join(folderPath, action.representationId)
@@ -367,12 +375,17 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
             await niceToHave(async () => {
               if (contents.has('merged')) {
                 const stream = getOrCreateWriteStream(action.representationId, path.extname(pathname))
-                stream.write(buffer || await fs.promises.readFile(filePath))
+                const buf = buffer || await fs.promises.readFile(filePath)
+                await waitForWrite
+                stream.write(buf)
+                writeSequence.write()
               }
             })
           })
         )
       } else if (action.kind === 'chunk') {
+        const writeSequence = getOrCreateWriteSquence(action.representationId)
+        const waitForWrite = writeSequence.read()
         promises.push(
           niceToHave(async () => {
             this._events.emit('increase total', action.duration / action.timescale, action.representationId)
@@ -385,7 +398,10 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
             await niceToHave(async () => {
               if (contents.has('merged')) {
                 const stream = getOrCreateWriteStream(action.representationId, path.extname(pathname))
-                stream.write(buffer || await fs.promises.readFile(filePath))
+                const buf = buffer || await fs.promises.readFile(filePath)
+                await waitForWrite
+                stream.write(buf)
+                writeSequence.write()
               }
             })
           })
@@ -400,7 +416,7 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
       const video = streamList.find(([, data]) => data.mimeType.includes('video'))
       const audio = streamList.find(([, data]) => data.mimeType.includes('audio'))
       if (video && audio) {
-        niceToHave(async () => {
+        await niceToHave(async () => {
           const cmd = `cd ${JSON.stringify(folderPath)} && ffmpeg -i ${JSON.stringify(video[1].fileName)} -i ${JSON.stringify(audio[1].fileName)} -map 0:v -map 1:a -c copy video.mp4`
           await exec(cmd)
         })

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.34] - 2020-08-18
+### Fixed
+- [Instagram] merged stream not sequenced
+
 ## [0.0.33] - 2020-08-18
 ### Added
 - [Instagram] add live chat

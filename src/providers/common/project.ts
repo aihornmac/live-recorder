@@ -133,6 +133,7 @@ export class HLSProject {
         validateStatus(status) {
           return status >= 200 && status < 300 || status === 404
         },
+        timeout: 120000,
       })
       if (r.status === 404) {
         if (this._isStreamStarted) return

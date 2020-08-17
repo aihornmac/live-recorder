@@ -35,13 +35,11 @@ import {
   parseStreamList,
   parseBandwidth,
   parseResolution,
-  pickStream,
-  printStreamChoices,
   HLSExecutor,
   HLSExecutorOptions,
-  createHLSProgressBar,
   HLSContentType,
 } from '../common/hls'
+import { pickStream, printStreamChoices, createDownloadProgressBar } from '../common/helpers'
 
 const PROVIDER = 'abematv'
 
@@ -566,7 +564,7 @@ async function executeHls(options: {
 
   if (!contents.size) return
 
-  const progressBar = createHLSProgressBar()
+  const progressBar = createDownloadProgressBar()
 
   progressBar.start()
 

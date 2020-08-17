@@ -42,3 +42,13 @@ export async function input(message: string, options: Pick<inquirer.InputQuestio
   })
   return result.input as string
 }
+
+export async function password(message: string, options: Pick<inquirer.InputQuestionOptions, 'filter' | 'validate'> = {}) {
+  const result = await inquirer.prompt({
+    ...options,
+    type: 'password',
+    name: 'input',
+    message,
+  })
+  return result.input as string
+}

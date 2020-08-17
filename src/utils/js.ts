@@ -173,3 +173,53 @@ export function mapValues<T extends { [key: string]: unknown }, R = T[keyof T]>(
   }
   return result
 }
+
+export interface WeakMapLike<K, V> {
+  get(key: K): V | undefined
+  has(key: K): boolean
+  set(key: K, value: V): this
+}
+
+export interface MapLike<K, V> extends WeakMapLike<K, V> {
+  [Symbol.iterator](): IterableIterator<[K, V]>
+  entries(): IterableIterator<[K, V]>
+  keys(): IterableIterator<K>
+  values(): IterableIterator<V>
+  clear(): void
+}
+
+type MapType<M, K, V> = M extends MapLike<unknown, unknown> ? MapLike<K, V> : WeakMapLike<K, V>
+type ArgumentTypes<F extends Function> = F extends (...args: infer A) => unknown ? A : never
+type Addtion<M extends WeakMapLike<unknown, unknown>, F extends Function> = {
+  readonly map: MapType<M, ArgumentTypes<F>[0], F extends (...args: unknown[]) => unknown ? ReturnType<F> : unknown>,
+}
+
+export interface AbstractMapMapper<M extends WeakMapLike<unknown, unknown>> {
+  // type-coverage:ignore-next-line
+  <F extends () => unknown>(fn: F): ((key: unknown) => ReturnType<F>) & Addtion<M, F>
+  <F extends Function>(fn: F): F & Addtion<M, F>
+}
+
+export function defineMapper<M extends WeakMapLike<unknown, unknown>>(createMap: () => M) {
+  function createMapper(fn: Function): Function {
+    const map = createMap()
+    function getOrCreateItem(key: unknown) {
+      if (map.has(key)) return map.get(key)
+      const item: unknown = fn(key)
+      map.set(key, item)
+      return item
+    }
+    getOrCreateItem.map = map
+    return getOrCreateItem
+  }
+
+  return createMapper as AbstractMapMapper<M>
+}
+
+export const createMapMapper = defineMapper(() => new Map<unknown, unknown>())
+
+export type MapMapper = typeof createMapMapper
+
+export const createWeakMapMapper = defineMapper(() => new WeakMap<{}, unknown>())
+
+export type WeakMapMapper = typeof createWeakMapMapper

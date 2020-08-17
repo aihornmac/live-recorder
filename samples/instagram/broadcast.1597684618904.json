@@ -1,0 +1,51 @@
+{
+  "broadcast": {
+    "id": "18117845698188828",
+    "dash_playback_url": "https://instagram.fkix2-1.fna.fbcdn.net/hvideo-lla1/_nc_ohc-QEtws8VO1MsAX8pnNC5/_nc_cat-109/v/rX0jUSt6d4zxZJmVc4Yu7/live-dash/dash-hd/18117845698188828.mpd?_nc_rl=AfDVlfPPR7WSoR0t&oh=fdcbdf432d05ff4163aca310320224ef&oe=5F3C78BB",
+    "dash_abr_playback_url": null,
+    "dash_live_predictive_playback_url": "https://instagram.fkix2-1.fna.fbcdn.net/hvideo-lla1/_nc_ohc-QEtws8VO1MsAX8pnNC5/_nc_cat-109/v/rX0jUSt6d4zxZJmVc4Yu7/live-dash/dash-ll-hd/18117845698188828.mpd?_nc_rl=AfDVlfPPR7WSoR0t&oh=5cba2d9c6b4a2baf0fc13c404c87e5de&oe=5F3C2936",
+    "broadcast_status": "active",
+    "viewer_count": 0,
+    "internal_only": false,
+    "cover_frame_url": "https://instagram.fkix2-1.fna.fbcdn.net/v/t58.9792-15/76516009_3017660061664568_8375117312305085288_n.jpg?_nc_ht=instagram.fkix2-1.fna.fbcdn.net&_nc_ohc=uyEV0IBdfl8AX8-ZY76&oh=d2e97640a8edd3d41bb6a638c6f7dcc8&oe=5F3C1500",
+    "cobroadcasters": [],
+    "is_player_live_trace_enabled": 0,
+    "is_gaming_content": false,
+    "is_live_comment_mention_enabled": true,
+    "is_live_comment_replies_enabled": false,
+    "broadcast_owner": {
+      "pk": 21215606215,
+      "username": "xxxxxxxxx",
+      "full_name": "",
+      "is_private": false,
+      "profile_pic_url": "https://instagram.fkix2-1.fna.fbcdn.net/v/t51.2885-19/s150x150/83722400_884933838642239_2783829520153575424_n.jpg?_nc_ht=instagram.fkix2-1.fna.fbcdn.net&_nc_ohc=jt_KRBJ43iQAX_AG_YD&oh=6de7816ec222ff7bdfe6f8c09041451e&oe=5F642038",
+      "profile_pic_id": "2259782185854509564_31225606292",
+      "friendship_status": {
+        "following": false,
+        "followed_by": false,
+        "blocking": false,
+        "muting": false,
+        "is_private": false,
+        "incoming_request": false,
+        "outgoing_request": false,
+        "is_bestie": false,
+        "is_restricted": false
+      },
+      "is_verified": false,
+      "live_subscription_status": "default"
+    },
+    "published_time": 1597684571,
+    "hide_from_feed_unit": true,
+    "video_duration": 0,
+    "media_id": "2377872958972988363_31225606292",
+    "broadcast_message": "",
+    "organic_tracking_token": "eyJ2ZXJzaW9uIjo1LCJwYXlsb2FkIjp7ImlzX2FuYWx5dGljc190cmFja2VkIjpmYWxzZSwidXVpZCI6IjFkMmZjNmZkNmQ1MjRiMTlhODVjM2IxN2I4ZmNhNjMwMjM3Nzg3Mjk1ODk3Mjk4ODM2MyIsInNlcnZlcl90b2tlbiI6IjE1OTc2ODQ2MTg4MDB8MjM3Nzg3Mjk1ODk3Mjk4ODM2M3wzNDY0MTcyMTJ8ODQ0ZjIwNjc2ZGE4NzU1MDZmN2FlODg5YzIxZTUxYzRhMGZlOTM3YmMxZWYzMmM5YmQxNDFjMjljZGJiOWJiZiJ9LCJzaWduYXR1cmUiOiIifQ==",
+    "dimensions": {
+      "height": 2206,
+      "width": 1176
+    },
+    "response_timestamp": 1597684618
+  },
+  "reel": null,
+  "status": "ok"
+}

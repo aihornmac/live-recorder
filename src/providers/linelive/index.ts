@@ -11,7 +11,8 @@ import {
   getPlayerStatus,
 } from './api'
 import { parseUrl } from './dispatch'
-import { loopPlayList, pickStream, printStreamChoices, HLSExecutor, createHLSProgressBar } from '../common/hls'
+import { loopPlayList, HLSExecutor } from '../common/hls'
+import { pickStream, printStreamChoices, createDownloadProgressBar } from '../common/helpers'
 
 const DEFAULT_CONCURRENT = 8
 
@@ -157,7 +158,7 @@ async function execute(options: CommonExecutionOptions & {
 
   const filePath = path.join(projectPath, 'merged.ts')
 
-  const progressBar = createHLSProgressBar()
+  const progressBar = createDownloadProgressBar()
 
   const hls = new HLSExecutor({
     url: pickedStream.url,

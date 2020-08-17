@@ -9,8 +9,9 @@ import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
 import { ensure } from '../../utils/flow-control'
 import { get } from '../../utils/request'
 import { parseUrl } from './dispatch'
-import { loopPlayList, parseStreamList, parseBandwidth, pickStream, printStreamChoices, HLSExecutor, createHLSProgressBar } from '../common/hls'
+import { loopPlayList, parseStreamList, parseBandwidth, HLSExecutor } from '../common/hls'
 import { getStreamData, createClient } from './api'
+import { pickStream, printStreamChoices, createDownloadProgressBar } from '../common/helpers'
 
 const DEFAULT_CONCURRENT = 8
 
@@ -146,7 +147,7 @@ async function execute(options: CommonExecutionOptions & {
     })
   }
 
-  const progressBar = createHLSProgressBar()
+  const progressBar = createDownloadProgressBar()
 
   progressBar.start()
 

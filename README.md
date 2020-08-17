@@ -39,6 +39,7 @@ More cli options can be found in [sections of corresponding  providers](#support
 | [radiko](#radiko) | <https://radiko.jp/> |
 | [LineLive](#livelive) | <https://live.line.me/> |
 | [Twitter](#twitter) | <https://twitter.com/> |
+| [Instagram](#instagram) | <https://instagram.com/> |
 | [M3U8](#m3u8) | - |
 
 ## Tools
@@ -152,6 +153,28 @@ Specify download concurrency:
 Disable hash in generated filename:
 
     $ live-recorder --no-hash https://twitter.com/abcde/status/1285960853611850000
+
+### Instagram
+
+Specify recording content, since you may want to have more information other than stream.
+
+    $ live-recorder --content video,chunks,mpd https://instagram.com/abcde
+
+Specify download concurrency:
+
+    $ live-recorder --concurrent 8 https://instagram.com/abcde
+
+Disable hash in generated filename:
+
+    $ live-recorder --no-hash https://instagram.com/abcde
+
+Specify username:
+
+    $ live-recorder --username alice https://instagram.com/abcde
+
+Logout:
+
+    $ live-recorder instagram logout
 
 ### M3U8
 

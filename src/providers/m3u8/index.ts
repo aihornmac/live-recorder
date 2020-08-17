@@ -9,7 +9,8 @@ import { CommonCreateOptions, CommonArgv } from '../common/typed-input'
 import { ensure } from '../../utils/flow-control'
 import { get } from '../../utils/request'
 import { parseUrl } from './dispatch'
-import { loopPlayList, parseStreamList, parseBandwidth, pickStream, printStreamChoices, HLSExecutor, createHLSProgressBar, determineM3U8Type } from '../common/hls'
+import { loopPlayList, parseStreamList, parseBandwidth, HLSExecutor, determineM3U8Type } from '../common/hls'
+import { pickStream, printStreamChoices, createDownloadProgressBar } from '../common/helpers'
 
 const DEFAULT_CONCURRENT = 8
 
@@ -40,6 +41,11 @@ export function match(url: URL) {
           demandOption: false,
           describe: `Specify fetch playlist interval, defaults to 1000`,
         })
+        .option('shareQuery', {
+          type: 'boolean',
+          demandOption: false,
+          describe: `Specify whether to share query string or not`,
+        })
         .option('noHash', {
           type: 'boolean',
           nargs: 0,
@@ -65,6 +71,10 @@ export function match(url: URL) {
 
         console.log(`concurrent ${concurrency}`)
 
+        if (argv.shareQuery) {
+          console.log(`share query`)
+        }
+
         const folderPath = path.resolve(process.cwd(), options.projectPath || '')
 
         yield 'prepared' as const
@@ -76,6 +86,7 @@ export function match(url: URL) {
           interval: argv.interval ?? 1000,
           contents,
           url: url.toString(),
+          shareQuery: !!argv.shareQuery,
         })
       },
     }
@@ -94,12 +105,13 @@ type CommonExecutionOptions = {
   readonly interval: number
   readonly ensureUnique: boolean
   readonly contents: ReadonlySet<ContentType>
+  readonly shareQuery: boolean
 }
 
 async function execute(options: CommonExecutionOptions & {
   readonly url: string
 }) {
-  const { folderPath, interval, concurrency, url: streamListUrl, contents } = options
+  const { folderPath, interval, concurrency, url: streamListUrl, contents, shareQuery } = options
 
   const fileHash = format(new Date(), 'yyyyLLddHHmmss')
   const projectName = [fileHash].filter(Boolean).join('.')
@@ -162,11 +174,18 @@ async function execute(options: CommonExecutionOptions & {
     })
   }
 
-  const progressBar = createHLSProgressBar()
+  const progressBar = createDownloadProgressBar()
 
   progressBar.start()
 
   await Promise.all(playLists.map(async ({ url: playListUrl, filePath }) => {
+    if (shareQuery) {
+      const u = new URL(playListUrl)
+      for (const [key, value] of new URL(streamListUrl).searchParams) {
+        u.searchParams.append(key, value)
+      }
+      playListUrl = u.toString()
+    }
     const { actions } = loopPlayList({
       getPlayList: playListUrl,
       interval,
@@ -180,6 +199,7 @@ async function execute(options: CommonExecutionOptions & {
       filePath,
       concurrency,
       contents,
+      shareQuery,
     })
 
     hls.events.on('increase progress', value => progressBar.increaseValue(value / playLists.length))
@@ -204,6 +224,8 @@ function formatContent(x: string) {
   for (const part of x.split(/[^a-zA-Z0-9-]/)) {
     if (part === 'merged' || part === 'm3u8' || part === 'chunks') {
       parts.push(part)
+    } else if (part === 'video' || part === 'audio') {
+      parts.push('merged')
     }
   }
   return new Set(parts)

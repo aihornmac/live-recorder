@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+
+<MPD
+  type="dynamic"
+  xmlns="urn:mpeg:dash:schema:mpd:2011"
+  xmlns:xsi="http://www.w3.org/2011/XMLSchema-instance"
+  xsi:schemaLocation="urn:mpeg:DASH:schema:MPD:2011 DASH-MPD.xsd"
+  profiles="urn:mpeg:dash:profile:isoff-live:2011"
+  availabilityStartTime="2020-08-11T05:59:47-07:00"
+  availabilityEndTime="2020-08-11T06:52:39-07:00"
+  timeShiftBufferDepth="PT20S"
+  suggestedPresentationDelay="PT2S"
+  minBufferTime="PT1S"
+  publishTime="2020-08-11T05:59:47-07:00"
+  minimumUpdatePeriod="PT1S"
+  currentServerTimeMs="1597153659956"
+  fblsVersion="sve.live_streaming:b77c4f8"
+  firstAvTimeMs="1597151538222"
+  lastVideoFrameTs="0"
+  loapStreamId="17873532121861025"
+  publishFrameTime="1001">
+  <Period id="dash-hd" start="PT0S">
+    <AdaptationSet
+      segmentAlignment="true"
+      maxWidth="432"
+      maxHeight="768"
+      maxFrameRate="30">
+      <Representation
+        id="live-hd-v"
+        mimeType="video/mp4"
+        codecs="avc1.4d401e"
+        width="432"
+        height="768"
+        frameRate="30"
+        startWithSAP="1"
+        bandwidth="549404"
+        FBQualityClass="sd"
+        FBQualityLabel="432p">
+        <SegmentTemplate
+          presentationTimeOffset="0"
+          timescale="1000"
+          initialization="../live-hd-v/17873532121861025_0-init.m4v"
+          media="../live-hd-v/17873532121861025_0-$Time$.m4v">
+          <SegmentTimeline>
+            <S t="2845900" d="2000"/>
+            <S t="2847900" d="2000"/>
+            <S t="2849900" d="2000"/>
+            <S t="2851900" d="2000"/>
+            <S t="2853900" d="2000"/>
+            <S t="2855900" d="2000"/>
+            <S t="2857900" d="2000"/>
+            <S t="2859900" d="2000"/>
+            <S t="2861900" d="2000"/>
+            <S t="2863900" d="2000"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+    </AdaptationSet>
+    <AdaptationSet segmentAlignment="true">
+      <Representation
+        id="live-hd-a"
+        mimeType="audio/mp4"
+        codecs="mp4a.40.2"
+        audioSamplingRate="44100"
+        startWithSAP="1"
+        bandwidth="47446">
+        <SegmentTemplate
+          presentationTimeOffset="0"
+          timescale="1000"
+          initialization="../live-hd-a/17873532121861025_0-init.m4a"
+          media="../live-hd-a/17873532121861025_0-$Time$.m4a">
+          <SegmentTimeline>
+            <S t="2845900" d="2000"/>
+            <S t="2847900" d="2000"/>
+            <S t="2849900" d="2000"/>
+            <S t="2851900" d="2000"/>
+            <S t="2853900" d="2000"/>
+            <S t="2855900" d="2000"/>
+            <S t="2857900" d="2000"/>
+            <S t="2859900" d="2000"/>
+            <S t="2861900" d="2000"/>
+            <S t="2863900" d="2000"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>

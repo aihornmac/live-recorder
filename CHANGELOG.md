@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.32] - 2020-08-18
+### Added
+- [Instagram] basic support for Instagram
+- [M3U8] add cli option `--share-query` to share query string among m3u8 urls
+- DASH prototype
+
+### Fixed
+- requests should be with timeout
+
 ## [0.0.31] - 2020-08-15
 ### Added
 - [tools] add merge tool options `--dry` to enable dry run

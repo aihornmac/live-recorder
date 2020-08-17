@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.33] - 2020-08-18
+### Added
+- [Instagram] add live chat
+- [Instagram] merge chunks with ffmpeg
+
+### Fixed
+- [Instagram] record not ending
+
 ## [0.0.32] - 2020-08-18
 ### Added
 - [Instagram] basic support for Instagram

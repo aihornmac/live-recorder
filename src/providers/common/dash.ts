@@ -11,9 +11,10 @@ import { call, later, createMapMapper } from '../../utils/js'
 import { niceToHave } from '../../utils/flow-control'
 import { get, isAxiosError } from '../../utils/request'
 import { parse, ManifestParser } from '../../utils/mpd'
-import { fail, isErrorPayload } from '../../utils/error'
+import { isErrorPayload } from '../../utils/error'
 import { pickStream } from './helpers'
 import { once } from 'lodash'
+import { exec } from '../../utils/cli'
 
 export interface ManifestInput {
   readonly url: string
@@ -99,187 +100,94 @@ export function loopDashManifest(options: {
 
         const mpd = new ManifestParser().mpd(parse(manifestInput.content))
 
-        // const totalDuration = call(() => {
-        //   const { mediaPresentationDuration } = manifest
-        //   if (typeof mediaPresentationDuration !== 'string') return
-        //   const pdurationObject = parsePresentationDuration(mediaPresentationDuration)
-        //   if (!pdurationObject) {
-        //     throw fail(`Unable to parse mediaPresentationDuration, given ${JSON.stringify(pdurationObject)}`)
-        //   }
-        //   return presentationDurationToSeconds(pdurationObject)
-        // })
-
-        if (mpd.type === 'static') {
-          throw fail(`static type is under development`)
-          // if (typeof totalDuration !== 'number') {
-          //   throw fail(`total duration must be defined in mpd static type`)
-          // }
-          // const timepoints = call(() => {
-          //   const list = manifest.Period.map((period, i) => {
-          //     return {
-          //       start: call(() => {
-          //         const { start } = period
-          //         if (typeof start !== 'string') return
-          //         const pd = parsePresentationDuration(start)
-          //         if (!pd) {
-          //           throw fail(`Unable to parse period[${i}].start, given ${JSON.stringify(start)}`)
-          //         }
-          //         return presentationDurationToSeconds(pd)
-          //       }),
-          //       duration: call(() => {
-          //         const { duration } = period
-          //         if (typeof duration !== 'string') return
-          //         const pd = parsePresentationDuration(duration)
-          //         if (!pd) {
-          //           throw fail(`Unable to parse period[${i}].duration, given ${JSON.stringify(duration)}`)
-          //         }
-          //         return presentationDurationToSeconds(pd)
-          //       })
-          //     }
-          //   })
-          //   if (!list.length) return list
-          //   const first = list[0]
-          //   if (typeof first.start === 'number') {
-          //     if (first.start !== 0) {
-          //       throw fail(`period[0].start must be 0`)
-          //     }
-          //   }
-          //   return Array.from(call(function* () {
-          //     let offset = 0
-          //     for (let i = 0; i < list.length; i++) {
-          //       const curr = list[i]
-          //       const next = i < list.length - 1 ? list[i + 1] : undefined
-          //       let { start, duration } = curr
-          //       if (typeof start === 'number') {
-          //         if (start !== offset) {
-          //           throw fail(`period[${i}].start should be ${offset}, ${start} given`)
-          //         }
-          //       } else {
-          //         start = offset
-          //       }
-          //       if (typeof duration === '')
-          //     }
-          //   }))
-          // })
-          // const timepoints = manifest.Period.map((period, i , periods) => {
-          //   const { start, duration } = period
-          //   // validate period timepoint offset
-          //   if (typeof start === 'string') {
-          //     const pd = parsePresentationDuration(start)
-          //     if (!pd) {
-          //       throw fail(`Unable to parse period[${i}].start, given ${JSON.stringify(start)}`)
-          //     }
-          //     const timing = presentationDurationToSeconds(pd)
-          //     if (timing !== timepointOffset) {
-          //       throw fail(`period[${i}].start must be ${timepointOffset}, ${timing} given`)
-          //     }
-          //   }
-          //   // duration
-          //   if (typeof start === 'string') {
-          //     const pd = parsePresentationDuration(start)
-          //     if (!pd) {
-          //       throw fail(`Unable to parse period[${i}].start, given ${JSON.stringify(start)}`)
-          //     }
-          //     const timing = presentationDurationToSeconds(pd)
-          //     if (timing !== timepointOffset) {
-          //       throw fail(`period[${i}].start must be ${timepointOffset}, ${timing} given`)
-          //     }
-          //   }
-          // })
-          // for (const period of manifest.Period) {
-          //   period.
-          // }
-        } else if (mpd.type === 'dynamic') {
-          const mpdUrl = new URL(mpd.baseUrl || '', manifestInput.url)
-          for (const period of mpd.periods) {
-            const periodUrl = new URL(period.baseUrl || '', mpdUrl.toString())
-            for (const adaptationSet of period.adaptationSets) {
-              const adaptationSetUrl = new URL(adaptationSet.baseUrl || '', periodUrl.toString())
-              adaptationSet.representations.filter(x => x.bandwidth)
-              const picked = pickStream(adaptationSet.representations.map(representation => {
-                return {
-                  representation,
-                  data: {
-                    BANDWIDTH: representation.bandwidth,
-                    RESOLUTION: {
-                      width: representation.width,
-                      height: representation.height
-                    },
-                  }
+        const mpdUrl = new URL(mpd.baseUrl || '', manifestInput.url)
+        for (const period of mpd.periods) {
+          const periodUrl = new URL(period.baseUrl || '', mpdUrl.toString())
+          for (const adaptationSet of period.adaptationSets) {
+            const adaptationSetUrl = new URL(adaptationSet.baseUrl || '', periodUrl.toString())
+            adaptationSet.representations.filter(x => x.bandwidth)
+            const picked = pickStream(adaptationSet.representations.map(representation => {
+              return {
+                representation,
+                data: {
+                  BANDWIDTH: representation.bandwidth,
+                  RESOLUTION: {
+                    width: representation.width,
+                    height: representation.height
+                  },
                 }
-              }))
-              if (!picked) {
-                console.log(chalk.yellowBright(`Representation not found in AdaptationSet ${period.__original.id}`))
-                continue
               }
-              const { representation } = picked
-              const { segmentTemplate } = representation
-              if (!segmentTemplate) {
-                console.log(chalk.yellowBright(`SegmentTemplate is not present in Representation ${representation.__original.id}`))
-                continue
+            }))
+            if (!picked) {
+              console.log(chalk.yellowBright(`Representation not found in AdaptationSet ${period.__original.id}`))
+              continue
+            }
+            const { representation } = picked
+            const { segmentTemplate } = representation
+            if (!segmentTemplate) {
+              console.log(chalk.yellowBright(`SegmentTemplate is not present in Representation ${representation.__original.id}`))
+              continue
+            }
+            const { segmentTimeline } = segmentTemplate
+            if (!segmentTimeline) {
+              console.log(chalk.yellowBright(`only SegmentTimeline is supported in Representation ${representation.__original.id}`))
+              continue
+            }
+            const representationUrl = new URL(representation.baseUrl || '', adaptationSetUrl.toString())
+
+            const { initialization, media, timescale } = segmentTemplate
+
+            const mimeType = representation.mimeType || adaptationSet.mimeType || ''
+
+            if (initialization) {
+              if (!initMap.has(representation.id)) {
+                initMap.add(representation.id)
+                const initializationUrl = new URL(initialization, representationUrl.toString())
+                actions.write({
+                  kind: 'init',
+                  representationId: representation.id,
+                  mimeType,
+                  url: initializationUrl.toString(),
+                })
               }
-              const { segmentTimeline } = segmentTemplate
-              if (!segmentTimeline) {
-                console.log(chalk.yellowBright(`only SegmentTimeline is supported in Representation ${representation.__original.id}`))
-                continue
-              }
-              const representationUrl = new URL(representation.baseUrl || '', adaptationSetUrl.toString())
+            }
 
-              const { initialization, media, timescale } = segmentTemplate
+            const { segments } = segmentTimeline
 
-              const mimeType = representation.mimeType || adaptationSet.mimeType || ''
+            if (segments.length) {
+              let timepoints = timepointMap.get(representation.id)
+              if (!timepoints) timepointMap.set(representation.id, timepoints = new Set())
 
-              if (initialization) {
-                if (!initMap.has(representation.id)) {
-                  initMap.add(representation.id)
-                  const initializationUrl = new URL(initialization, representationUrl.toString())
+              let timepoint = 0
+              for (const { t, d, r = 1 } of segments) {
+                if (typeof t === 'number') {
+                  timepoint = t
+                }
+                for (let k = 0; k < r; k++) {
+                  if (timepoints.has(timepoint)) {
+                    continue
+                  }
+                  timepoints.add(timepoint)
+                  const segmentUri = media.replace(`$Time$`, String(timepoint))
+                  const segmentUrl = new URL(segmentUri, representationUrl.toString())
                   actions.write({
-                    kind: 'init',
+                    kind: 'chunk',
                     representationId: representation.id,
                     mimeType,
-                    url: initializationUrl.toString(),
+                    url: segmentUrl.toString(),
+                    timepoint,
+                    duration: d,
+                    timescale,
                   })
+                  timepoint += d
                 }
               }
-
-              const { segments } = segmentTimeline
-
-              if (segments.length) {
-                let timepoints = timepointMap.get(representation.id)
-                if (!timepoints) timepointMap.set(representation.id, timepoints = new Set())
-
-                let timepoint = 0
-                for (const { t, d, r = 1 } of segments) {
-                  if (typeof t === 'number') {
-                    timepoint = t
-                  }
-                  for (let k = 0; k < r; k++) {
-                    if (timepoints.has(timepoint)) {
-                      continue
-                    }
-                    timepoints.add(timepoint)
-                    const segmentUri = media.replace(`$Time$`, String(timepoint))
-                    const segmentUrl = new URL(segmentUri, representationUrl.toString())
-                    actions.write({
-                      kind: 'chunk',
-                      representationId: representation.id,
-                      mimeType,
-                      url: segmentUrl.toString(),
-                      timepoint,
-                      duration: d,
-                      timescale,
-                    })
-                    timepoint += d
-                  }
-                }
-                interval = Math.min(...segments.map(x => Math.floor(x.d / timescale * 1000)))
-              }
-
+              interval = Math.min(...segments.map(x => Math.floor(x.d / timescale * 1000)))
             }
           }
-        } else {
-          throw fail(`Unknown mpd type ${mpd.type}`)
         }
+
+        if (mpd.type === 'static') break
 
         await later(interval)
       } catch (e) {
@@ -294,6 +202,8 @@ export function loopDashManifest(options: {
         await later(1000)
       }
     }
+
+    actions.end()
   })
 
   return {
@@ -313,8 +223,8 @@ export interface DashExecutorOptions {
 }
 
 export type DashEventMap = {
-  ['increase progress'](value: number): void
-  ['increase total'](value: number): void
+  ['increase progress'](value: number, representationId: string): void
+  ['increase total'](value: number, representationId: string): void
 }
 
 export interface DashEventEmitter extends Omit<EventEmitter, keyof TypedEventEmitter<DashEventMap>>, TypedEventEmitter<DashEventMap> {}
@@ -425,6 +335,11 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
       return getOrCreate
     })
 
+    const streams = new Map<string, {
+      readonly mimeType: string
+      readonly fileName: string
+    }>()
+
     for await (const action of actions) {
       if (action.kind === 'mpd') {
         if (contents.has('mpd')) {
@@ -436,14 +351,20 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
           )
         }
       } else if (action.kind === 'init') {
+        const { pathname } = new URL(action.url)
+        if (!streams.has(action.representationId)) {
+          streams.set(action.representationId, {
+            mimeType: action.mimeType,
+            fileName: `${action.representationId}${path.extname(pathname)}`
+          })
+        }
         promises.push(
           niceToHave(async () => {
             const representationFolderPath = path.join(folderPath, action.representationId)
             await mkdir(representationFolderPath)
-            const { pathname } = new URL(action.url)
             const filePath = path.join(representationFolderPath, `init${path.extname(pathname)}`)
             const buffer = await this._ensureDownload(action.url, filePath)
-            niceToHave(async () => {
+            await niceToHave(async () => {
               if (contents.has('merged')) {
                 const stream = getOrCreateWriteStream(action.representationId, path.extname(pathname))
                 stream.write(buffer || await fs.promises.readFile(filePath))
@@ -454,14 +375,14 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
       } else if (action.kind === 'chunk') {
         promises.push(
           niceToHave(async () => {
-            this._events.emit('increase total', action.duration / action.timescale)
+            this._events.emit('increase total', action.duration / action.timescale, action.representationId)
             const representationFolderPath = path.join(folderPath, action.representationId)
             await mkdir(representationFolderPath)
             const { pathname } = new URL(action.url)
             const filePath = path.join(representationFolderPath, `${action.timepoint}${path.extname(pathname)}`)
             const buffer = await this._ensureDownload(action.url, filePath)
-            this._events.emit('increase progress', action.duration / action.timescale)
-            niceToHave(async () => {
+            this._events.emit('increase progress', action.duration / action.timescale, action.representationId)
+            await niceToHave(async () => {
               if (contents.has('merged')) {
                 const stream = getOrCreateWriteStream(action.representationId, path.extname(pathname))
                 stream.write(buffer || await fs.promises.readFile(filePath))
@@ -473,5 +394,17 @@ export class DashExecutor<TOptions extends DashExecutorOptions = DashExecutorOpt
     }
 
     await Promise.all(promises)
+
+    if (contents.has('merged') && streams.size > 1) {
+      const streamList = Array.from(streams)
+      const video = streamList.find(([, data]) => data.mimeType.includes('video'))
+      const audio = streamList.find(([, data]) => data.mimeType.includes('audio'))
+      if (video && audio) {
+        niceToHave(async () => {
+          const cmd = `cd ${JSON.stringify(folderPath)} && ffmpeg -i ${JSON.stringify(video[1].fileName)} -i ${JSON.stringify(audio[1].fileName)} -map 0:v -map 1:a -c copy video.mp4`
+          await exec(cmd)
+        })
+      }
+    }
   }
 }
